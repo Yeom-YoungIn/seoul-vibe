@@ -1,0 +1,18 @@
+{
+  "name": "seoul-vibe",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "packages/client",
+    "packages/server"
+  ],
+  "scripts": {
+    "dev:client": "npm --workspace packages/client run dev",
+    "build:client": "npm --workspace packages/client run build",
+    "lint:client": "npm --workspace packages/client run lint",
+    "dev:server": "npm --workspace packages/server run start:dev",
+    "build:server": "npm --workspace packages/server run build",
+    "lint:server": "npm --workspace packages/server run lint",
+    "start:server": "npm --workspace packages/server run start"
+  }
+}
