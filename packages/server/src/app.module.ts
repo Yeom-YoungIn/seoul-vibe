@@ -12,7 +12,7 @@ import { ContentModule } from './content/content.module';
       envFilePath: `.env.${process.env.NODE_ENV || 'local'}`,
     }),
     OrmModule,
-    ContentModule
+    ContentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

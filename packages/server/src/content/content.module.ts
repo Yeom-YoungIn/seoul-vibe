@@ -4,6 +4,6 @@ import { ServiceContentModule } from './service/content.module';
 
 @Module({
   imports: [AdminContentModule, ServiceContentModule],
-  exports: [AdminContentModule, ServiceContentModule]
+  exports: [AdminContentModule, ServiceContentModule],
 })
 export class ContentModule {}
