@@ -1,12 +1,17 @@
-import { Controller, Get } from '@nestjs/common';
-import { ServiceContentService } from './content.service';
+import { Controller, Get, Query } from '@nestjs/common';
+import { ContentServicePort } from './content.service.port';
+import { GetContentListDto } from './dto/request/get-content-list.dto';
 
 @Controller('content')
 export class ServiceContentController {
-  constructor(private readonly serviceContentService: ServiceContentService) {}
+  constructor(private readonly contentService: ContentServicePort) {}
 
   @Get()
-  listContent() {
-    return this.serviceContentService.findAll();
+  getContentsList(@Query() query: GetContentListDto) {
+    return this.contentService.getContentsList({
+      language: query.language,
+      skip: query.skip,
+      take: query.take,
+    });
   }
 }
