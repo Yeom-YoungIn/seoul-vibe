@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Content } from '../shared/entities/content.entity';
 import { Repository } from 'typeorm';
 import { ContentTranslation } from '../shared/entities/content-translations.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ContentServicePort, GetContentListInput } from './content.service.port';
+import {
+  ContentServicePort,
+  GetContentDetailInput,
+  GetContentListInput,
+} from './content.service.port';
+import { DEFAULT_LANGUAGE } from '@app/common';
+import { ContentNotFoundError } from '../shared/errors/content.errors';
+import { Content } from '../shared/entities/content.entity';
 
 @Injectable()
 export class ServiceContentService implements ContentServicePort {
@@ -26,5 +32,23 @@ export class ServiceContentService implements ContentServicePort {
       .skip(skip)
       .take(take)
       .getManyAndCount();
+  }
+
+  async getContentDetail(input: GetContentDetailInput): Promise<Content> {
+    const { slug, language = DEFAULT_LANGUAGE } = input;
+
+    const content = await this.contentRepository
+      .createQueryBuilder('content')
+      .innerJoinAndSelect('content.translations', 'translation', 'translation.locale = :language', {
+        language,
+      })
+      .where('content.slug = :slug', { slug })
+      .getOne();
+
+    if (!content) {
+      throw new ContentNotFoundError();
+    }
+
+    return content;
   }
 }
