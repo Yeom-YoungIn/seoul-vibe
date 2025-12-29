@@ -1,4 +1,3 @@
-import { join } from 'path';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
@@ -19,13 +18,6 @@ export const buildTypeOrmConfig = (configService: ConfigService): TypeOrmModuleO
     database: configService.get<string>('DB_NAME'),
     autoLoadEntities: true,
     synchronize: configService.get<boolean>('TYPEORM_SYNC', false),
-    entities: [
-      // built JS output (production)
-      join(__dirname, '../../**/*.entity.{ts,js}'),
-      join(process.cwd(), 'dist/**/*.entity.js'),
-      // source TS during dev
-      join(process.cwd(), 'src/**/*.entity.{ts,js}'),
-    ],
-    migrations: [join(process.cwd(), 'dist/**/*.migration.js')],
+    migrations: [],
   };
 };
