@@ -23,7 +23,7 @@ export class ServiceContentService implements ContentServicePort {
   async getContentsList(input: GetContentListInput): Promise<[Content[], number]> {
     const { language = 'KO', skip = 0, take = 10 } = input;
 
-    return this.contentRepository
+    const result = await this.contentRepository
       .createQueryBuilder('content')
       .innerJoinAndSelect('content.translations', 'translation', 'translation.locale = :language', {
         language,
@@ -32,6 +32,8 @@ export class ServiceContentService implements ContentServicePort {
       .skip(skip)
       .take(take)
       .getManyAndCount();
+
+    return result;
   }
 
   async getContentDetail(input: GetContentDetailInput): Promise<Content> {
