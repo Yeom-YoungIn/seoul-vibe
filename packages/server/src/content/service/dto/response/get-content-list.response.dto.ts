@@ -27,7 +27,7 @@ export class GetContentListItemResponseDto {
   createdAt!: Date;
 }
 
-export class GetContentListResponseDto {
+export class GetContentListAndCountResponseDto {
   @ApiProperty({ type: GetContentListItemResponseDto, isArray: true })
   @Expose()
   @Type(() => GetContentListItemResponseDto)

@@ -4,8 +4,8 @@ import { ContentServicePort } from './content.service.port';
 import { GetContentListDto } from './dto/request/get-content-list.dto';
 import { GetContentDetailDto } from './dto/request/get-content-detail.dto';
 import { TransformResponse } from '@app/common/decorator';
-import { GetContentListResponseDto } from './dto/response/get-content-list.response.dto';
 import { GetContentDetailResponseDto } from './dto/response/get-content-detail.response.dto';
+import { GetContentListAndCountResponseDto } from './dto/response/get-content-list.response.dto';
 
 @ApiTags('content')
 @Controller('content')
@@ -13,7 +13,7 @@ export class ServiceContentController {
   constructor(private readonly contentService: ContentServicePort) {}
 
   @Get()
-  @TransformResponse(GetContentListResponseDto)
+  @TransformResponse(GetContentListAndCountResponseDto)
   @ApiOperation({ summary: '컨텐츠 목록 조회' })
   getContentsList(@Query() query: GetContentListDto) {
     return this.contentService.getContentsList({

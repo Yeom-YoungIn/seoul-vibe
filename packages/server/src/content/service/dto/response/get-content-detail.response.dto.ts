@@ -1,5 +1,6 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { BaseContentTranslationResponseDto } from '../../../shared/dto/response/base-content-translation.response.dto';
 
 export class GetContentDetailResponseDto {
   @ApiProperty({ description: '콘텐츠 ID' })
@@ -10,23 +11,16 @@ export class GetContentDetailResponseDto {
   @Expose()
   slug!: string;
 
-  @ApiProperty({ description: '콘텐츠 제목' })
-  @Expose()
-  title!: string;
-
-  @ApiPropertyOptional({ description: 'HTML 본문', nullable: true })
-  @Expose()
-  bodyHtml?: string | null;
-
-  @ApiPropertyOptional({ description: '텍스트 본문', nullable: true })
-  @Expose()
-  bodyText?: string | null;
-
   @ApiProperty({ description: '게시 여부' })
   @Expose()
   isPublished!: boolean;
 
-  @ApiPropertyOptional({ description: '게시 일시', type: String, format: 'date-time', nullable: true })
+  @ApiPropertyOptional({
+    description: '게시 일시',
+    type: String,
+    format: 'date-time',
+    nullable: true,
+  })
   @Expose()
   publishedAt?: Date | null;
 
@@ -37,4 +31,13 @@ export class GetContentDetailResponseDto {
   @ApiProperty({ description: '수정 일시', type: String, format: 'date-time' })
   @Expose()
   updatedAt!: Date;
+
+  @ApiProperty({
+    description: '번역 데이터',
+    isArray: true,
+    type: BaseContentTranslationResponseDto,
+  })
+  @Expose()
+  @Type(() => BaseContentTranslationResponseDto)
+  translations!: BaseContentTranslationResponseDto[];
 }
