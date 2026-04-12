@@ -1,0 +1,97 @@
+import { FormEvent, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { api } from '../../lib/axios';
+
+export default function SignupPage() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ email: '', password: '', nickname: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      await api.post('/auth/signup', form);
+      setDone(true);
+    } catch (err: any) {
+      const msg = err.response?.data?.message ?? 'Signup failed. Please try again.';
+      setError(Array.isArray(msg) ? msg.join(', ') : msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (done) {
+    return (
+      <div className="auth-container">
+        <div className="auth-card">
+          <h2>Check your email</h2>
+          <p>We sent a verification link to <strong>{form.email}</strong>.</p>
+          <p>Please verify your email to continue.</p>
+          <Link to="/auth/login" className="auth-link">Back to login</Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1 className="auth-title">Seoul Vibe</h1>
+        <h2>Create account</h2>
+        <form onSubmit={handleSubmit} className="auth-form">
+          <label>
+            Email
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+              required
+            />
+          </label>
+          <label>
+            Password
+            <input
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="At least 8 characters"
+              minLength={8}
+              required
+            />
+          </label>
+          <label>
+            Nickname
+            <input
+              type="text"
+              name="nickname"
+              value={form.nickname}
+              onChange={handleChange}
+              placeholder="seoulvibe_user"
+              minLength={2}
+              maxLength={50}
+              required
+            />
+          </label>
+          {error && <p className="auth-error">{error}</p>}
+          <button type="submit" disabled={loading} className="auth-button">
+            {loading ? 'Creating account…' : 'Sign up'}
+          </button>
+        </form>
+        <p className="auth-footer">
+          Already have an account? <Link to="/auth/login" className="auth-link">Log in</Link>
+        </p>
+      </div>
+    </div>
+  );
+}

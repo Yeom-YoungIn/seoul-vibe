@@ -1,23 +1,21 @@
-import { useState } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import RootLayout from './components/layouts/RootLayout';
+import LoginPage from './pages/auth/LoginPage';
+import SignupPage from './pages/auth/SignupPage';
+import VerifyEmailPage from './pages/auth/VerifyEmailPage';
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <main className="app">
-      <header className="hero">
-        <p className="eyebrow">Monorepo Sandbox</p>
-        <h1>Seoul Vibe</h1>
-        <p>React client living inside a monorepo with a NestJS backend.</p>
-      </header>
-
-      <section className="card">
-        <p>Try clicking the button to check that React is working:</p>
-        <button type="button" onClick={() => setCount((prev) => prev + 1)}>
-          Count is {count}
-        </button>
-      </section>
-    </main>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<RootLayout />}>
+          <Route path="/" element={<Navigate to="/auth/login" replace />} />
+          <Route path="/auth/signup" element={<SignupPage />} />
+          <Route path="/auth/login" element={<LoginPage />} />
+          <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
