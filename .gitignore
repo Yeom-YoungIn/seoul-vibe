@@ -7,3 +7,12 @@ dist
 coverage
 tmp
 .idea
+agent/
+
+# AI context files
+CLAUDE.md
+AGENT.md
+GEMINI.md
+COPILOT.md
+.cursorrules
+.cursorignore
