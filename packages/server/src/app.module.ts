@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { OrmModule } from '@app/common';
 import { ConfigModule } from '@nestjs/config';
+import { ContentModule } from './content/content.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { ConfigModule } from '@nestjs/config';
       envFilePath: `.env.${process.env.NODE_ENV || 'local'}`,
     }),
     OrmModule,
+    ContentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

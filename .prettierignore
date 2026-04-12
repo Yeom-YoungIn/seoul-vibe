@@ -1,0 +1,11 @@
+node_modules
+dist
+build
+coverage
+*.log
+.turbo
+.next
+.DS_Store
+packages/server/dist
+packages/server/node_modules
+packages/client/node_modules

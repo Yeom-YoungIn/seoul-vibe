@@ -1,6 +1,6 @@
-import { join } from 'path';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 export const buildTypeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => {
   const required = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASS', 'DB_NAME'] as const;
@@ -19,13 +19,9 @@ export const buildTypeOrmConfig = (configService: ConfigService): TypeOrmModuleO
     database: configService.get<string>('DB_NAME'),
     autoLoadEntities: true,
     synchronize: configService.get<boolean>('TYPEORM_SYNC', false),
-    entities: [
-      // built JS output (production)
-      join(__dirname, '../../**/*.entity.{ts,js}'),
-      join(process.cwd(), 'dist/**/*.entity.js'),
-      // source TS during dev
-      join(process.cwd(), 'src/**/*.entity.{ts,js}'),
-    ],
-    migrations: [join(process.cwd(), 'dist/**/*.migration.js')],
+    namingStrategy:
+      configService.get<string>('DB_NAMING_STRATEGY') === 'snake'
+        ? new SnakeNamingStrategy()
+        : undefined,
   };
 };

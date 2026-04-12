@@ -1,3 +1,3 @@
-export * from './common.module';
-export * from './orm/orm.module';
-export * from './orm/typeorm.config';
+export * from './orm';
+export * from './interceptors';
+export * from './types';
