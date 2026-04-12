@@ -6,7 +6,7 @@ export class ContentNotFoundError extends HttpException {
       {
         statusCode: HttpStatus.NOT_FOUND,
         errorCode: 'CONTENT_NOT_FOUND',
-        message: message ? message : `order not found`,
+        message: message ? message : `content not found`,
       },
       HttpStatus.NOT_FOUND
     );
