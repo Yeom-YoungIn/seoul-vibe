@@ -7,6 +7,14 @@ import { CommonSuccessResponseInterceptor, TransformResponseInterceptor } from '
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 3000;
+  const corsOrigin = process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:5173'];
+
+  app.enableCors({
+    origin: corsOrigin,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
