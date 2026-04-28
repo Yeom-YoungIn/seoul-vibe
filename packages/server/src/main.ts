@@ -2,7 +2,12 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { CommonSuccessResponseInterceptor, TransformResponseInterceptor } from '@app/common';
+import {
+  AllExceptionsFilter,
+  CommonSuccessResponseInterceptor,
+  RequestLoggingInterceptor,
+  TransformResponseInterceptor,
+} from '@app/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -24,6 +29,8 @@ async function bootstrap() {
     })
   );
 
+  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalInterceptors(new RequestLoggingInterceptor());
   app.useGlobalInterceptors(new CommonSuccessResponseInterceptor());
   app.useGlobalInterceptors(new TransformResponseInterceptor());
 
