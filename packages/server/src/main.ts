@@ -2,11 +2,24 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { CommonSuccessResponseInterceptor, TransformResponseInterceptor } from '@app/common';
+import {
+  AllExceptionsFilter,
+  CommonSuccessResponseInterceptor,
+  RequestLoggingInterceptor,
+  TransformResponseInterceptor,
+} from '@app/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 3000;
+  const corsOrigin = process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:5173'];
+
+  app.enableCors({
+    origin: corsOrigin,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -16,6 +29,8 @@ async function bootstrap() {
     })
   );
 
+  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalInterceptors(new RequestLoggingInterceptor());
   app.useGlobalInterceptors(new CommonSuccessResponseInterceptor());
   app.useGlobalInterceptors(new TransformResponseInterceptor());
 

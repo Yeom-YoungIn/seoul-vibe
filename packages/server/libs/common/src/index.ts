@@ -1,5 +1,6 @@
 export * from './orm';
 export * from './interceptors';
+export * from './filters';
 export * from './types';
 export * from './decorator';
 export * from './guards';
