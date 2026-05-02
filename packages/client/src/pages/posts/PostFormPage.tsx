@@ -1,7 +1,9 @@
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { postsApi, PostCategory, CreatePostPayload } from '../../lib/api/posts';
 import { uploadApi } from '../../lib/api/upload';
+
+const LocationPicker = lazy(() => import('../../components/ui/LocationPicker'));
 
 const CATEGORIES: { value: PostCategory; label: string }[] = [
   { value: 'restaurant', label: '🍜 Restaurant' },
@@ -126,6 +128,29 @@ export default function PostFormPage({ mode }: Props) {
             maxLength={255}
           />
         </label>
+
+        <div className="form-label">
+          Location on map <span className="upload-hint">(선택)</span>
+          <div style={{ marginTop: '0.35rem' }}>
+            <Suspense fallback={<div style={{ height: 240, background: '#f1f5f9', borderRadius: 12 }} />}>
+              <LocationPicker
+                lat={form.locationLat}
+                lng={form.locationLng}
+                onChange={(lat, lng) => setForm((f) => ({ ...f, locationLat: lat, locationLng: lng }))}
+              />
+            </Suspense>
+            {form.locationLat && (
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                style={{ marginTop: '0.5rem' }}
+                onClick={() => setForm((f) => ({ ...f, locationLat: undefined, locationLng: undefined }))}
+              >
+                위치 초기화
+              </button>
+            )}
+          </div>
+        </div>
 
         <div className="form-label">
           Photos

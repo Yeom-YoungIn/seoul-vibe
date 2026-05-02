@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { postsApi, Post } from '../../lib/api/posts';
 import { useAuth } from '../../hooks/useAuth';
 import Spinner from '../../components/ui/Spinner';
+
+const MapView = lazy(() => import('../../components/ui/MapView'));
 
 export default function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -76,6 +78,16 @@ export default function PostDetailPage() {
 
           {post.locationName && (
             <p className="post-detail-location">📍 {post.locationName}</p>
+          )}
+
+          {post.locationLat && post.locationLng && (
+            <Suspense fallback={<div style={{ height: 280, background: '#f1f5f9', borderRadius: 12 }} />}>
+              <MapView
+                lat={post.locationLat}
+                lng={post.locationLng}
+                label={post.locationName ?? undefined}
+              />
+            </Suspense>
           )}
 
           {canDelete && (
