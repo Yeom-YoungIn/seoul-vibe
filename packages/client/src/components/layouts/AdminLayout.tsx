@@ -1,11 +1,11 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
-const adminLinks = [
-  { to: '/admin', label: 'Dashboard', end: true },
-  { to: '/admin/users', label: 'Users' },
-  { to: '/admin/articles', label: 'Articles' },
-  { to: '/admin/posts', label: 'Posts' },
+const NAV_ITEMS = [
+  { to: '/admin', label: '📊 Overview', end: true },
+  { to: '/admin/users', label: '👥 Users' },
+  { to: '/admin/articles', label: '📰 Articles' },
+  { to: '/admin/posts', label: '📝 Posts' },
 ];
 
 export default function AdminLayout() {
@@ -14,37 +14,37 @@ export default function AdminLayout() {
 
   const handleLogout = () => {
     logout();
-    navigate('/auth/login', { replace: true });
+    navigate('/auth/login');
   };
 
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
         <div className="admin-sidebar-logo">
-          Seoul Vibe
+          <span>Seoul Vibe</span>
           <span className="admin-badge">Admin</span>
         </div>
         <nav className="admin-nav">
-          {adminLinks.map((link) => (
+          {NAV_ITEMS.map((item) => (
             <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.end}
+              key={item.to}
+              to={item.to}
+              end={item.end}
               className={({ isActive }) =>
-                isActive ? 'admin-nav-item active' : 'admin-nav-item'
+                `admin-nav-item ${isActive ? 'active' : ''}`
               }
             >
-              {link.label}
+              {item.label}
             </NavLink>
           ))}
         </nav>
         <div className="admin-sidebar-footer">
-          <NavLink to="/" className="btn btn-ghost">
-            View site
-          </NavLink>
-          <button type="button" className="btn btn-ghost" onClick={handleLogout}>
+          <button className="btn btn-ghost btn-sm" onClick={handleLogout}>
             Logout
           </button>
+          <NavLink to="/" className="btn btn-ghost btn-sm" target="_blank">
+            View site ↗
+          </NavLink>
         </div>
       </aside>
       <main className="admin-main">

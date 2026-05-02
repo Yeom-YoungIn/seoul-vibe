@@ -6,6 +6,7 @@ import { OrmModule } from '@app/common';
 import { AuthModule } from './auth/auth.module';
 import { ContentModule } from './content/content.module';
 import { PostModule } from './post/post.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PostModule } from './post/post.module';
     AuthModule,
     ContentModule,
     PostModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

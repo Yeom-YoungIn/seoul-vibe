@@ -1,60 +1,56 @@
 import { useEffect, useState } from 'react';
-import { articlesApi } from '../../lib/api/articles';
-import { postsApi } from '../../lib/api/posts';
+import { Link } from 'react-router-dom';
+import { adminUsersApi } from '../../lib/api/admin';
+import { adminArticlesApi } from '../../lib/api/admin';
+import { adminPostsApi } from '../../lib/api/admin';
 
-interface AdminStats {
+interface Stats {
+  users: number;
   articles: number;
   posts: number;
-  users: string;
+  hiddenPosts: number;
 }
 
 export default function AdminHomePage() {
-  const [stats, setStats] = useState<AdminStats>({
-    articles: 0,
-    posts: 0,
-    users: 'N/A',
-  });
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
     Promise.all([
-      articlesApi.getList({ take: 1 }),
-      postsApi.getFeed({ take: 1 }),
-    ])
-      .then(([articles, posts]) => {
-        setStats({
-          articles: articles.count,
-          posts: posts.count,
-          users: 'N/A',
-        });
-      })
-      .finally(() => setLoading(false));
+      adminUsersApi.getList({ take: 1 }),
+      adminArticlesApi.getList({ take: 1 }),
+      adminPostsApi.getList({ take: 1 }),
+      adminPostsApi.getList({ isHidden: true, take: 1 }),
+    ]).then(([users, articles, posts, hidden]) => {
+      setStats({
+        users: users.count,
+        articles: articles.count,
+        posts: posts.count,
+        hiddenPosts: hidden.count,
+      });
+    });
   }, []);
 
-  return (
-    <section className="admin-page">
-      <header className="admin-page-header">
-        <h1 className="admin-page-title">Dashboard</h1>
-      </header>
+  const cards = [
+    { label: 'Total users', value: stats?.users, to: '/admin/users', color: '#6366f1' },
+    { label: 'Articles', value: stats?.articles, to: '/admin/articles', color: '#14b8a6' },
+    { label: 'Community posts', value: stats?.posts, to: '/admin/posts', color: '#f59e0b' },
+    { label: 'Hidden posts', value: stats?.hiddenPosts, to: '/admin/posts?isHidden=true', color: '#ef4444' },
+  ];
 
-      {loading ? (
-        <p className="admin-loading">Loading...</p>
-      ) : (
-        <div className="admin-stat-grid">
-          <article className="stat-card">
-            <div className="stat-card-label">Articles</div>
-            <div className="stat-card-value">{stats.articles}</div>
-          </article>
-          <article className="stat-card">
-            <div className="stat-card-label">Posts</div>
-            <div className="stat-card-value">{stats.posts}</div>
-          </article>
-          <article className="stat-card">
-            <div className="stat-card-label">Users</div>
-            <div className="stat-card-value">{stats.users}</div>
-          </article>
-        </div>
-      )}
-    </section>
+  return (
+    <div className="admin-page">
+      <h1 className="admin-page-title">Overview</h1>
+
+      <div className="admin-stat-grid">
+        {cards.map((c) => (
+          <Link key={c.label} to={c.to} className="admin-stat-card">
+            <span className="admin-stat-label">{c.label}</span>
+            <span className="admin-stat-value" style={{ color: c.color }}>
+              {stats === null ? '…' : c.value}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }
