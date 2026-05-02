@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { LanguageContext, useLanguageState } from './hooks/useLanguage';
 import MainLayout from './components/layouts/MainLayout';
 import RootLayout from './components/layouts/RootLayout';
 import AdminLayout from './components/layouts/AdminLayout';
@@ -19,7 +20,10 @@ import AdminArticlesPage from './pages/admin/AdminArticlesPage';
 import AdminPostsPage from './pages/admin/AdminPostsPage';
 
 function App() {
+  const languageState = useLanguageState();
+
   return (
+    <LanguageContext.Provider value={languageState}>
     <BrowserRouter>
       <Routes>
         {/* Auth pages — no nav */}
@@ -55,6 +59,7 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </LanguageContext.Provider>
   );
 }
 

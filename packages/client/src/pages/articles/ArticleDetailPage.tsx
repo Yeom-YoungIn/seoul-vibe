@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { articlesApi, Article } from '../../lib/api/articles';
 import Spinner from '../../components/ui/Spinner';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export default function ArticleDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { language } = useLanguage();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -12,11 +14,11 @@ export default function ArticleDetailPage() {
   useEffect(() => {
     if (!slug) return;
     articlesApi
-      .getDetail(slug, 'EN')
+      .getDetail(slug, language)
       .then(setArticle)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [slug]);
+  }, [slug, language]);
 
   if (loading) return <Spinner />;
 

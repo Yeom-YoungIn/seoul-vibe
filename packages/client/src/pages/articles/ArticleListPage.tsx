@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { articlesApi, ArticleListItem } from '../../lib/api/articles';
 import Spinner from '../../components/ui/Spinner';
+import { useLanguage } from '../../hooks/useLanguage';
 
 const PAGE_SIZE = 12;
 
 export default function ArticleListPage() {
+  const { language } = useLanguage();
   const [articles, setArticles] = useState<ArticleListItem[]>([]);
   const [count, setCount] = useState(0);
   const [skip, setSkip] = useState(0);
@@ -14,13 +16,13 @@ export default function ArticleListPage() {
   useEffect(() => {
     setLoading(true);
     articlesApi
-      .getList({ language: 'EN', skip, take: PAGE_SIZE })
+      .getList({ language, skip, take: PAGE_SIZE })
       .then((res) => {
         setArticles(res.list);
         setCount(res.count);
       })
       .finally(() => setLoading(false));
-  }, [skip]);
+  }, [skip, language]);
 
   return (
     <div className="page">

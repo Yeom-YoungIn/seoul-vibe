@@ -1,8 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export default function NavBar() {
   const { user, logout } = useAuth();
+  const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -17,6 +19,16 @@ export default function NavBar() {
         <Link to="/articles" className="navbar-link">Discover</Link>
         <Link to="/feed" className="navbar-link">Feed</Link>
       </nav>
+      <div className="navbar-lang">
+        <button
+          className={`lang-btn ${language === 'EN' ? 'active' : ''}`}
+          onClick={() => setLanguage('EN')}
+        >EN</button>
+        <button
+          className={`lang-btn ${language === 'KO' ? 'active' : ''}`}
+          onClick={() => setLanguage('KO')}
+        >KO</button>
+      </div>
       <div className="navbar-actions">
         {user ? (
           <>
