@@ -16,12 +16,7 @@ import {
   InvalidRefreshTokenError,
   InvalidVerifyTokenError,
 } from '../shared/errors/auth.errors';
-import {
-  AuthServicePort,
-  LoginInput,
-  SignupInput,
-  TokenPair,
-} from './auth.service.port';
+import { AuthServicePort, LoginInput, SignupInput, TokenPair } from './auth.service.port';
 
 const BCRYPT_ROUNDS = 10;
 const VERIFY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24h
@@ -35,7 +30,7 @@ export class AuthService implements AuthServicePort {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly emailService: EmailService,
+    private readonly emailService: EmailService
   ) {}
 
   async signup(input: SignupInput): Promise<void> {
@@ -45,17 +40,22 @@ export class AuthService implements AuthServicePort {
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
     const emailVerifyToken = randomUUID();
     const emailVerifyTokenExpiresAt = new Date(Date.now() + VERIFY_TOKEN_TTL_MS);
+    const shouldSendMail = this.configService.get('MAIL_SEND_ENABLED', 'false') === 'true';
 
     const user = this.userRepository.create({
       email: input.email,
       passwordHash,
       nickname: input.nickname,
-      emailVerifyToken,
-      emailVerifyTokenExpiresAt,
+      isEmailVerified: !shouldSendMail,
+      emailVerifyToken: shouldSendMail ? emailVerifyToken : null,
+      emailVerifyTokenExpiresAt: shouldSendMail ? emailVerifyTokenExpiresAt : null,
     });
 
     await this.userRepository.save(user);
-    await this.emailService.sendVerificationEmail(input.email, emailVerifyToken);
+
+    if (shouldSendMail) {
+      await this.emailService.sendVerificationEmail(input.email, emailVerifyToken);
+    }
   }
 
   async verifyEmail(token: string): Promise<void> {
@@ -108,8 +108,7 @@ export class AuthService implements AuthServicePort {
     const tokenRecord = this.refreshTokenRepository.create({
       tokenHash: randomUUID(), // placeholder — overwritten below
       expiresAt: new Date(
-        Date.now() +
-          parseInt(this.configService.get('JWT_REFRESH_EXPIRES_MS', '604800000')),
+        Date.now() + parseInt(this.configService.get('JWT_REFRESH_EXPIRES_MS', '604800000'))
       ),
       user,
     });
@@ -120,7 +119,7 @@ export class AuthService implements AuthServicePort {
       {
         secret: this.configService.getOrThrow('JWT_ACCESS_SECRET'),
         expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '15m'),
-      },
+      }
     );
 
     const refreshToken = this.jwtService.sign(
@@ -128,10 +127,9 @@ export class AuthService implements AuthServicePort {
       {
         secret: this.configService.getOrThrow('JWT_REFRESH_SECRET'),
         expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN', '7d'),
-      },
+      }
     );
 
-    // store hash of refresh token
     tokenRecord.tokenHash = await bcrypt.hash(refreshToken, BCRYPT_ROUNDS);
     await this.refreshTokenRepository.save(tokenRecord);
 
