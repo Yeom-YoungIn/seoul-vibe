@@ -1,6 +1,7 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { postsApi, PostCategory, CreatePostPayload } from '../../lib/api/posts';
+import { uploadApi } from '../../lib/api/upload';
 
 const CATEGORIES: { value: PostCategory; label: string }[] = [
   { value: 'restaurant', label: '🍜 Restaurant' },
@@ -15,13 +16,15 @@ interface Props {
 export default function PostFormPage({ mode }: Props) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [form, setForm] = useState<CreatePostPayload>({
     content: '',
     images: [],
     category: 'etc',
     locationName: '',
   });
-  const [imageInput, setImageInput] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -39,6 +42,26 @@ export default function PostFormPage({ mode }: Props) {
       });
     }
   }, [mode, id]);
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploading(true);
+    setError('');
+    try {
+      const urls = await Promise.all(files.map((f) => uploadApi.uploadImage(f)));
+      setForm((f) => ({ ...f, images: [...(f.images ?? []), ...urls] }));
+    } catch {
+      setError('이미지 업로드에 실패했습니다.');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const removeImage = (idx: number) => {
+    setForm((f) => ({ ...f, images: (f.images ?? []).filter((_, i) => i !== idx) }));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -58,16 +81,6 @@ export default function PostFormPage({ mode }: Props) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const addImage = () => {
-    if (!imageInput.trim()) return;
-    setForm((f) => ({ ...f, images: [...(f.images ?? []), imageInput.trim()] }));
-    setImageInput('');
-  };
-
-  const removeImage = (idx: number) => {
-    setForm((f) => ({ ...f, images: (f.images ?? []).filter((_, i) => i !== idx) }));
   };
 
   return (
@@ -115,28 +128,43 @@ export default function PostFormPage({ mode }: Props) {
         </label>
 
         <div className="form-label">
-          Image URLs
-          <div className="image-input-row">
-            <input
-              className="form-input"
-              type="url"
-              value={imageInput}
-              onChange={(e) => setImageInput(e.target.value)}
-              placeholder="https://..."
-            />
-            <button type="button" className="btn btn-ghost btn-sm" onClick={addImage}>
-              Add
+          Photos
+          <div className="image-upload-area">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? 'Uploading…' : '+ Add photos'}
             </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              multiple
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+            <span className="upload-hint">JPG, PNG, GIF, WEBP · max 5 MB each</span>
           </div>
+
           {(form.images ?? []).length > 0 && (
-            <ul className="image-list">
+            <div className="image-preview-grid">
               {(form.images ?? []).map((url, i) => (
-                <li key={i} className="image-list-item">
-                  <span className="image-list-url">{url}</span>
-                  <button type="button" className="image-list-remove" onClick={() => removeImage(i)}>✕</button>
-                </li>
+                <div key={i} className="image-preview-item">
+                  <img src={url} alt="" className="image-preview-thumb" />
+                  <button
+                    type="button"
+                    className="image-preview-remove"
+                    onClick={() => removeImage(i)}
+                    title="Remove"
+                  >
+                    ✕
+                  </button>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
 
@@ -146,7 +174,7 @@ export default function PostFormPage({ mode }: Props) {
           <button type="button" className="btn btn-ghost" onClick={() => navigate(-1)}>
             Cancel
           </button>
-          <button type="submit" disabled={loading} className="btn btn-primary">
+          <button type="submit" disabled={loading || uploading} className="btn btn-primary">
             {loading ? 'Saving…' : mode === 'create' ? 'Post' : 'Save changes'}
           </button>
         </div>
