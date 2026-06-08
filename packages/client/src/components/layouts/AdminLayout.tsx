@@ -9,7 +9,7 @@ const NAV_ITEMS = [
 ];
 
 export default function AdminLayout() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -20,9 +20,15 @@ export default function AdminLayout() {
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
-        <div className="admin-sidebar-logo">
-          <span>Seoul Vibe</span>
-          <span className="admin-badge">Admin</span>
+        <div className="admin-sidebar-brand">
+          <div className="admin-sidebar-logo">
+            <span>Seoul Vibe</span>
+            <span className="admin-badge">Admin</span>
+          </div>
+          <div className="admin-sidebar-meta">
+            <strong>{user?.nickname ?? 'Administrator'}</strong>
+            <span>{user?.email ?? 'Admin session'}</span>
+          </div>
         </div>
         <nav className="admin-nav">
           {NAV_ITEMS.map((item) => (

@@ -1,15 +1,29 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { adminPostsApi } from '../../lib/api/admin';
 import { Post } from '../../lib/api/posts';
 
 const PAGE_SIZE = 20;
 
+function parseHiddenFilter(value: string | null) {
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return undefined;
+}
+
 export default function AdminPostsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
   const [count, setCount] = useState(0);
   const [skip, setSkip] = useState(0);
-  const [isHidden, setIsHidden] = useState<boolean | undefined>(undefined);
+  const [isHidden, setIsHidden] = useState<boolean | undefined>(() =>
+    parseHiddenFilter(searchParams.get('isHidden')),
+  );
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setIsHidden(parseHiddenFilter(searchParams.get('isHidden')));
+  }, [searchParams]);
 
   useEffect(() => {
     setLoading(true);
@@ -46,7 +60,17 @@ export default function AdminPostsPage() {
           <button
             key={String(f.val)}
             className={`filter-chip ${isHidden === f.val ? 'active' : ''}`}
-            onClick={() => { setIsHidden(f.val); setSkip(0); }}
+            onClick={() => {
+              setIsHidden(f.val);
+              setSkip(0);
+
+              if (f.val === undefined) {
+                setSearchParams({});
+                return;
+              }
+
+              setSearchParams({ isHidden: String(f.val) });
+            }}
           >
             {f.label}
           </button>

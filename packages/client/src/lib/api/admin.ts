@@ -2,6 +2,32 @@ import { api } from '../axios';
 import { Article } from './articles';
 import { Post } from './posts';
 
+const inflightRequests = new Map<string, Promise<unknown>>();
+
+function serializeParams(params: Record<string, unknown>) {
+  return JSON.stringify(
+    Object.entries(params)
+      .filter(([, value]) => value !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right)),
+  );
+}
+
+function withSingleFlight<T>(key: string, request: () => Promise<T>) {
+  const existing = inflightRequests.get(key) as Promise<T> | undefined;
+
+  if (existing) {
+    return existing;
+  }
+
+  const nextRequest = request().finally(() => {
+    inflightRequests.delete(key);
+  });
+
+  inflightRequests.set(key, nextRequest);
+
+  return nextRequest;
+}
+
 // ── Types ──────────────────────────────────────
 
 export type UserRole = 'user' | 'admin';
@@ -49,7 +75,11 @@ export interface UpdateArticlePayload {
 
 export const adminUsersApi = {
   getList: (params: { email?: string; skip?: number; take?: number } = {}) =>
-    api.get<{ data: AdminUserListResponse }>('/users/admin', { params }).then((r) => r.data.data),
+    withSingleFlight(`users:${serializeParams(params)}`, () =>
+      api
+        .get<{ data: AdminUserListResponse }>('/users/admin', { params })
+        .then((r) => r.data.data),
+    ),
 
   changeRole: (id: string, role: UserRole) =>
     api.patch<{ data: AdminUser }>(`/users/admin/${id}/role`, { role }).then((r) => r.data.data),
@@ -61,9 +91,11 @@ export const adminUsersApi = {
 
 export const adminArticlesApi = {
   getList: (params: { isPublished?: boolean; skip?: number; take?: number } = {}) =>
-    api
-      .get<{ data: AdminArticleListResponse }>('/content/admin', { params })
-      .then((r) => r.data.data),
+    withSingleFlight(`articles:${serializeParams(params)}`, () =>
+      api
+        .get<{ data: AdminArticleListResponse }>('/content/admin', { params })
+        .then((r) => r.data.data),
+    ),
 
   getOne: (id: string) =>
     api.get<{ data: AdminArticle }>(`/content/admin/${id}`).then((r) => r.data.data),
@@ -87,9 +119,11 @@ export const adminArticlesApi = {
 
 export const adminPostsApi = {
   getList: (params: { isHidden?: boolean; category?: string; skip?: number; take?: number } = {}) =>
-    api
-      .get<{ data: AdminPostListResponse }>('/posts/admin', { params })
-      .then((r) => r.data.data),
+    withSingleFlight(`posts:${serializeParams(params)}`, () =>
+      api
+        .get<{ data: AdminPostListResponse }>('/posts/admin', { params })
+        .then((r) => r.data.data),
+    ),
 
   hide: (id: string) =>
     api.patch<{ data: Post }>(`/posts/admin/${id}/hide`).then((r) => r.data.data),

@@ -1,9 +1,11 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/axios';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { refreshAuth } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,8 @@ export default function LoginPage() {
       const { accessToken, refreshToken } = data.data;
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
-      navigate('/');
+      const user = await refreshAuth();
+      navigate(user?.role === 'admin' ? '/admin' : '/');
     } catch (err: any) {
       const msg = err.response?.data?.message ?? 'Login failed. Please try again.';
       setError(Array.isArray(msg) ? msg.join(', ') : msg);
