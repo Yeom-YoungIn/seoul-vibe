@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { adminPostsApi } from '../../lib/api/admin';
-import { Post } from '../../lib/api/posts';
+import { AdminPost, adminPostsApi } from '../../lib/api/admin';
 
 const PAGE_SIZE = 20;
 
@@ -13,7 +12,7 @@ function parseHiddenFilter(value: string | null) {
 
 export default function AdminPostsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<AdminPost[]>([]);
   const [count, setCount] = useState(0);
   const [skip, setSkip] = useState(0);
   const [isHidden, setIsHidden] = useState<boolean | undefined>(() =>
@@ -33,7 +32,7 @@ export default function AdminPostsPage() {
       .finally(() => setLoading(false));
   }, [skip, isHidden]);
 
-  const handleHideToggle = async (post: Post & { isHidden?: boolean }) => {
+  const handleHideToggle = async (post: AdminPost) => {
     const updated = post.isHidden
       ? await adminPostsApi.unhide(post.id)
       : await adminPostsApi.hide(post.id);
@@ -93,36 +92,33 @@ export default function AdminPostsPage() {
               </tr>
             </thead>
             <tbody>
-              {posts.map((p) => {
-                const post = p as Post & { isHidden?: boolean };
-                return (
-                  <tr key={p.id} className={post.isHidden ? 'row-hidden' : ''}>
-                    <td>@{p.author.nickname}</td>
-                    <td className="td-content">{p.content}</td>
-                    <td>{p.category}</td>
-                    <td>
-                      <span className={`status-badge ${post.isHidden ? 'hidden' : 'visible'}`}>
-                        {post.isHidden ? 'Hidden' : 'Visible'}
-                      </span>
-                    </td>
-                    <td>{new Date(p.createdAt).toLocaleDateString()}</td>
-                    <td className="td-actions">
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => handleHideToggle(post)}
-                      >
-                        {post.isHidden ? 'Unhide' : 'Hide'}
-                      </button>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleRemove(p.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {posts.map((post) => (
+                <tr key={post.id} className={post.isHidden ? 'row-hidden' : ''}>
+                  <td>@{post.author.nickname}</td>
+                  <td className="td-content">{post.content}</td>
+                  <td>{post.category}</td>
+                  <td>
+                    <span className={`status-badge ${post.isHidden ? 'hidden' : 'visible'}`}>
+                      {post.isHidden ? 'Hidden' : 'Visible'}
+                    </span>
+                  </td>
+                  <td>{new Date(post.createdAt).toLocaleDateString()}</td>
+                  <td className="td-actions">
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => handleHideToggle(post)}
+                    >
+                      {post.isHidden ? 'Unhide' : 'Hide'}
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleRemove(post.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

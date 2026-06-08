@@ -57,8 +57,12 @@ export interface AdminArticleListResponse {
 }
 
 export interface AdminPostListResponse {
-  list: Post[];
+  list: AdminPost[];
   count: number;
+}
+
+export interface AdminPost extends Post {
+  isHidden: boolean;
 }
 
 export interface CreateArticlePayload {
@@ -126,10 +130,10 @@ export const adminPostsApi = {
     ),
 
   hide: (id: string) =>
-    api.patch<{ data: Post }>(`/posts/admin/${id}/hide`).then((r) => r.data.data),
+    api.patch<{ data: AdminPost }>(`/posts/admin/${id}/hide`).then((r) => r.data.data),
 
   unhide: (id: string) =>
-    api.patch<{ data: Post }>(`/posts/admin/${id}/unhide`).then((r) => r.data.data),
+    api.patch<{ data: AdminPost }>(`/posts/admin/${id}/unhide`).then((r) => r.data.data),
 
   remove: (id: string) => api.delete(`/posts/admin/${id}`),
 };

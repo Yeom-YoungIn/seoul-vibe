@@ -40,3 +40,20 @@ export class PostFeedResponseDto {
 
   @ApiProperty() @Expose() count!: number;
 }
+
+export class AdminPostResponseDto extends PostResponseDto {
+  @ApiProperty()
+  @Expose()
+  isHidden!: boolean;
+}
+
+export class AdminPostFeedResponseDto {
+  @ApiProperty({ type: [AdminPostResponseDto], isArray: true })
+  @Expose()
+  @Type(() => AdminPostResponseDto)
+  list!: AdminPostResponseDto[];
+
+  @ApiProperty()
+  @Expose()
+  count!: number;
+}

@@ -11,7 +11,10 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard, Roles, RolesGuard, TransformResponse, UserRole } from '@app/common';
-import { PostFeedResponseDto, PostResponseDto } from '../service/dto/response/post.response.dto';
+import {
+  AdminPostFeedResponseDto,
+  AdminPostResponseDto,
+} from '../service/dto/response/post.response.dto';
 import { AdminPostService } from './admin.post.service';
 import { ListAdminPostDto } from './dto/request/list-admin-post.dto';
 
@@ -24,21 +27,21 @@ export class AdminPostController {
   constructor(private readonly adminPostService: AdminPostService) {}
 
   @Get()
-  @TransformResponse(PostFeedResponseDto)
+  @TransformResponse(AdminPostFeedResponseDto)
   @ApiOperation({ summary: '게시글 전체 목록 (관리자)' })
   findAll(@Query() query: ListAdminPostDto) {
     return this.adminPostService.findAll(query);
   }
 
   @Patch(':id/hide')
-  @TransformResponse(PostResponseDto)
+  @TransformResponse(AdminPostResponseDto)
   @ApiOperation({ summary: '게시글 숨김' })
   hide(@Param('id') id: string) {
     return this.adminPostService.hide(id);
   }
 
   @Patch(':id/unhide')
-  @TransformResponse(PostResponseDto)
+  @TransformResponse(AdminPostResponseDto)
   @ApiOperation({ summary: '게시글 숨김 해제' })
   unhide(@Param('id') id: string) {
     return this.adminPostService.unhide(id);
