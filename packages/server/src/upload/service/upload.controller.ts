@@ -16,6 +16,7 @@ import { Request } from 'express';
 import { JwtAuthGuard } from '@app/common';
 
 const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+const ALLOWED_MIME_PREFIX = 'image/';
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
 @ApiTags('upload')
@@ -38,8 +39,8 @@ export class UploadController {
       }),
       fileFilter: (_req, file, cb) => {
         const ext = extname(file.originalname).toLowerCase();
-        if (!ALLOWED_EXT.includes(ext)) {
-          return cb(new BadRequestException('jpg, png, gif, webp 파일만 허용됩니다.'), false);
+        if (!file.mimetype.startsWith(ALLOWED_MIME_PREFIX) || !ALLOWED_EXT.includes(ext)) {
+          return cb(new BadRequestException('이미지 파일(jpg, png, gif, webp)만 허용됩니다.'), false);
         }
         cb(null, true);
       },

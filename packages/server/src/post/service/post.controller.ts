@@ -14,11 +14,19 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard, TransformResponse } from '@app/common';
+import { Request as ExpressRequest } from 'express';
 import { CreatePostDto } from './dto/request/create-post.dto';
 import { GetPostFeedDto } from './dto/request/get-post-feed.dto';
 import { UpdatePostDto } from './dto/request/update-post.dto';
 import { PostFeedResponseDto, PostResponseDto } from './dto/response/post.response.dto';
 import { PostServicePort } from './post.service.port';
+
+type AuthenticatedPostRequest = ExpressRequest & {
+  user: {
+    id: string;
+    role: string;
+  };
+};
 
 @ApiTags('posts')
 @Controller('posts')
@@ -48,7 +56,7 @@ export class PostController {
   @ApiBearerAuth()
   @TransformResponse(PostResponseDto)
   @ApiOperation({ summary: '게시글 작성 (로그인 필요)' })
-  create(@Body() dto: CreatePostDto, @Request() req: any) {
+  create(@Body() dto: CreatePostDto, @Request() req: AuthenticatedPostRequest) {
     return this.postService.create({
       authorId: req.user.id,
       content: dto.content,
@@ -65,7 +73,7 @@ export class PostController {
   @ApiBearerAuth()
   @TransformResponse(PostResponseDto)
   @ApiOperation({ summary: '게시글 수정 (본인만)' })
-  update(@Param('id') id: string, @Body() dto: UpdatePostDto, @Request() req: any) {
+  update(@Param('id') id: string, @Body() dto: UpdatePostDto, @Request() req: AuthenticatedPostRequest) {
     return this.postService.update(id, req.user.id, {
       content: dto.content,
       images: dto.images,
@@ -81,7 +89,7 @@ export class PostController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: '게시글 삭제 (본인 or 관리자)' })
-  remove(@Param('id') id: string, @Request() req: any) {
+  remove(@Param('id') id: string, @Request() req: AuthenticatedPostRequest) {
     return this.postService.remove(id, req.user.id, req.user.role);
   }
 }

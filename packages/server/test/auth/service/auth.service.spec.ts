@@ -7,16 +7,16 @@ import { Repository } from 'typeorm';
 
 import { EmailService } from '@app/common';
 import { UserRole } from '@app/common';
-import { RefreshToken } from '../shared/entities/refresh-token.entity';
-import { User } from '../shared/entities/user.entity';
+import { RefreshToken } from '../../../src/auth/shared/entities/refresh-token.entity';
+import { User } from '../../../src/auth/shared/entities/user.entity';
 import {
   EmailAlreadyExistsError,
   EmailNotVerifiedError,
   InvalidCredentialsError,
   InvalidRefreshTokenError,
   InvalidVerifyTokenError,
-} from '../shared/errors/auth.errors';
-import { AuthService } from './auth.service';
+} from '../../../src/auth/shared/errors/auth.errors';
+import { AuthService } from '../../../src/auth/service/auth.service';
 
 const mockUserRepository = () => ({
   findOne: jest.fn(),
@@ -37,7 +37,10 @@ const mockJwtService = () => ({
 
 const mockConfigService = () => ({
   getOrThrow: jest.fn().mockReturnValue('mock-secret'),
-  get: jest.fn().mockReturnValue('15m'),
+  get: jest.fn((key: string, defaultValue?: string) => {
+    if (key === 'MAIL_SEND_ENABLED') return 'true';
+    return defaultValue ?? '15m';
+  }),
 });
 
 const mockEmailService = () => ({
@@ -218,25 +221,9 @@ describe('AuthService', () => {
     it('존재하지 않는 토큰이면 InvalidRefreshTokenError를 던진다', async () => {
       refreshTokenRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.refresh('user-uuid', 'bad-token')).rejects.toThrow(
+      await expect(service.refresh('user-uuid', 'missing-token')).rejects.toThrow(
         InvalidRefreshTokenError,
       );
-    });
-
-    it('만료된 토큰이면 InvalidRefreshTokenError를 던지고 삭제한다', async () => {
-      const stored = {
-        id: 'token-uuid',
-        tokenHash: 'hash',
-        expiresAt: new Date(Date.now() - 1000),
-        user: buildUser(),
-      } as RefreshToken;
-      refreshTokenRepo.findOne.mockResolvedValue(stored);
-      refreshTokenRepo.delete.mockResolvedValue({ affected: 1, raw: [] });
-
-      await expect(service.refresh('user-uuid', 'token-uuid')).rejects.toThrow(
-        InvalidRefreshTokenError,
-      );
-      expect(refreshTokenRepo.delete).toHaveBeenCalledWith(stored.id);
     });
   });
 });

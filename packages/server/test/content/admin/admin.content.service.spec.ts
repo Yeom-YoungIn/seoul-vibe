@@ -2,17 +2,17 @@ import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Content } from '../shared/entities/content.entity';
-import { ContentTranslation } from '../shared/entities/content-translations.entity';
-import { ContentNotFoundError } from '../shared/errors/content.errors';
-import { AdminContentService } from './admin.content.service';
+import { Content } from '../../../src/content/shared/entities/content.entity';
+import { ContentTranslation } from '../../../src/content/shared/entities/content-translations.entity';
+import { ContentNotFoundError } from '../../../src/content/shared/errors/content.errors';
+import { AdminContentService } from '../../../src/content/admin/admin.content.service';
 
 const mockContentRepository = () => ({
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
   softRemove: jest.fn(),
-  createQueryBuilder: jest.fn(),
+  findAndCount: jest.fn(),
 });
 
 const mockTranslationRepository = () => ({
@@ -92,39 +92,32 @@ describe('AdminContentService', () => {
 
   describe('findAll', () => {
     it('콘텐츠 목록과 개수를 반환한다', async () => {
-      const contents = [buildContent()];
-      const qb: any = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([contents, 1]),
-      };
-      contentRepo.createQueryBuilder.mockReturnValue(qb);
+      contentRepo.findAndCount.mockResolvedValue([[buildContent()], 1]);
 
       const [list, count] = await service.findAll({ skip: 0, take: 20 });
 
       expect(list).toHaveLength(1);
       expect(count).toBe(1);
+      expect(contentRepo.findAndCount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          relations: ['translations'],
+          order: { createdAt: 'DESC' },
+          skip: 0,
+          take: 20,
+        }),
+      );
     });
 
     it('isPublished 필터를 적용한다', async () => {
-      const qb: any = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
-      };
-      contentRepo.createQueryBuilder.mockReturnValue(qb);
+      contentRepo.findAndCount.mockResolvedValue([[], 0]);
 
       await service.findAll({ isPublished: true });
 
-      expect(qb.andWhere).toHaveBeenCalledWith('content.isPublished = :isPublished', {
-        isPublished: true,
-      });
+      expect(contentRepo.findAndCount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { isPublished: true },
+        }),
+      );
     });
   });
 
@@ -149,9 +142,7 @@ describe('AdminContentService', () => {
     it('slug와 번역을 수정한다', async () => {
       const translation = buildTranslation({ locale: 'KO' });
       const content = buildContent({ translations: [translation] });
-      contentRepo.findOne
-        .mockResolvedValueOnce(content)  // findOne inside update
-        .mockResolvedValueOnce(null);    // slug 중복 체크
+      contentRepo.findOne.mockResolvedValueOnce(content).mockResolvedValueOnce(null);
       contentRepo.save.mockResolvedValue({ ...content, slug: 'new-slug' });
 
       const result = await service.update('content-uuid', {
@@ -169,9 +160,9 @@ describe('AdminContentService', () => {
         .mockResolvedValueOnce(content)
         .mockResolvedValueOnce(buildContent({ slug: 'existing-slug' }));
 
-      await expect(
-        service.update('content-uuid', { slug: 'existing-slug' }),
-      ).rejects.toThrow(ConflictException);
+      await expect(service.update('content-uuid', { slug: 'existing-slug' })).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
@@ -193,11 +184,9 @@ describe('AdminContentService', () => {
       contentRepo.findOne.mockResolvedValue(content);
       contentRepo.save.mockResolvedValue({ ...content, isPublished: true });
 
-      const result = await service.publish('content-uuid');
+      await service.publish('content-uuid');
 
-      expect(contentRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ isPublished: true }),
-      );
+      expect(contentRepo.save).toHaveBeenCalledWith(expect.objectContaining({ isPublished: true }));
     });
 
     it('이미 발행된 콘텐츠는 저장 없이 반환한다', async () => {
@@ -218,9 +207,7 @@ describe('AdminContentService', () => {
 
       await service.unpublish('content-uuid');
 
-      expect(contentRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ isPublished: false }),
-      );
+      expect(contentRepo.save).toHaveBeenCalledWith(expect.objectContaining({ isPublished: false }));
     });
 
     it('이미 비발행 상태면 저장 없이 반환한다', async () => {

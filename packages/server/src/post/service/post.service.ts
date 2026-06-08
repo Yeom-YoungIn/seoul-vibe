@@ -19,19 +19,20 @@ export class PostService implements PostServicePort {
   ) {}
 
   async getFeed(input: GetPostFeedInput): Promise<[Post[], number]> {
-    const qb = this.postRepository
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.author', 'author')
-      .where('post.isHidden = false')
-      .orderBy('post.createdAt', 'DESC')
-      .skip(input.skip ?? 0)
-      .take(input.take ?? 20);
-
-    if (input.category) {
-      qb.andWhere('post.category = :category', { category: input.category });
-    }
-
-    return qb.getManyAndCount();
+    return this.postRepository.findAndCount({
+      where: input.category
+        ? {
+            isHidden: false,
+            category: input.category,
+          }
+        : {
+            isHidden: false,
+          },
+      relations: ['author'],
+      order: { createdAt: 'DESC' },
+      skip: input.skip ?? 0,
+      take: input.take ?? 20,
+    });
   }
 
   async getOne(id: string): Promise<Post> {

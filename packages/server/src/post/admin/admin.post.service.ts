@@ -13,21 +13,16 @@ export class AdminPostService {
   ) {}
 
   async findAll(dto: ListAdminPostDto): Promise<[Post[], number]> {
-    const qb = this.postRepository
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.author', 'author')
-      .orderBy('post.createdAt', 'DESC')
-      .skip(dto.skip ?? 0)
-      .take(dto.take ?? 20);
-
-    if (dto.isHidden !== undefined) {
-      qb.andWhere('post.isHidden = :isHidden', { isHidden: dto.isHidden });
-    }
-    if (dto.category) {
-      qb.andWhere('post.category = :category', { category: dto.category });
-    }
-
-    return qb.getManyAndCount();
+    return this.postRepository.findAndCount({
+      where: {
+        ...(dto.isHidden !== undefined ? { isHidden: dto.isHidden } : {}),
+        ...(dto.category ? { category: dto.category } : {}),
+      },
+      relations: ['author'],
+      order: { createdAt: 'DESC' },
+      skip: dto.skip ?? 0,
+      take: dto.take ?? 20,
+    });
   }
 
   async hide(id: string): Promise<Post> {

@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { BaseContentResponseDto } from '../../../shared/dto/response/base-content.response.dto';
 import { BaseContentTranslationResponseDto } from '../../../shared/dto/response/base-content-translation.response.dto';

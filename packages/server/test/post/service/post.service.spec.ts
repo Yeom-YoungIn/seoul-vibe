@@ -2,16 +2,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserRole } from '@app/common';
-import { Post, PostCategory } from '../shared/entities/post.entity';
-import { PostForbiddenError, PostNotFoundError } from '../shared/errors/post.errors';
-import { PostService } from './post.service';
+import { Post, PostCategory } from '../../../src/post/shared/entities/post.entity';
+import { PostForbiddenError, PostNotFoundError } from '../../../src/post/shared/errors/post.errors';
+import { PostService } from '../../../src/post/service/post.service';
 
 const mockPostRepository = () => ({
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
   softRemove: jest.fn(),
-  createQueryBuilder: jest.fn(),
+  findAndCount: jest.fn(),
 });
 
 const buildPost = (overrides: Partial<Post> = {}): Post =>
@@ -38,10 +38,7 @@ describe('PostService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        PostService,
-        { provide: getRepositoryToken(Post), useFactory: mockPostRepository },
-      ],
+      providers: [PostService, { provide: getRepositoryToken(Post), useFactory: mockPostRepository }],
     }).compile();
 
     service = module.get(PostService);
@@ -50,41 +47,33 @@ describe('PostService', () => {
 
   describe('getFeed', () => {
     it('숨김 처리되지 않은 게시글 목록을 반환한다', async () => {
-      const posts = [buildPost()];
-      const qb: any = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([posts, 1]),
-      };
-      postRepo.createQueryBuilder.mockReturnValue(qb);
+      postRepo.findAndCount.mockResolvedValue([[buildPost()], 1]);
 
       const [list, count] = await service.getFeed({ skip: 0, take: 20 });
 
       expect(list).toHaveLength(1);
       expect(count).toBe(1);
+      expect(postRepo.findAndCount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { isHidden: false },
+          relations: ['author'],
+          order: { createdAt: 'DESC' },
+          skip: 0,
+          take: 20,
+        }),
+      );
     });
 
     it('카테고리 필터를 적용한다', async () => {
-      const qb: any = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
-      };
-      postRepo.createQueryBuilder.mockReturnValue(qb);
+      postRepo.findAndCount.mockResolvedValue([[], 0]);
 
       await service.getFeed({ category: PostCategory.CAFE });
 
-      expect(qb.andWhere).toHaveBeenCalledWith('post.category = :category', {
-        category: PostCategory.CAFE,
-      });
+      expect(postRepo.findAndCount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { isHidden: false, category: PostCategory.CAFE },
+        }),
+      );
     });
   });
 
@@ -140,17 +129,17 @@ describe('PostService', () => {
       const post = buildPost({ author: { id: 'other-uuid' } as any });
       postRepo.findOne.mockResolvedValue(post);
 
-      await expect(
-        service.update('post-uuid', 'user-uuid', { content: '수정' }),
-      ).rejects.toThrow(PostForbiddenError);
+      await expect(service.update('post-uuid', 'user-uuid', { content: '수정' })).rejects.toThrow(
+        PostForbiddenError,
+      );
     });
 
     it('존재하지 않는 게시글 수정 시 PostNotFoundError를 던진다', async () => {
       postRepo.findOne.mockResolvedValue(null);
 
-      await expect(
-        service.update('bad-id', 'user-uuid', { content: '수정' }),
-      ).rejects.toThrow(PostNotFoundError);
+      await expect(service.update('bad-id', 'user-uuid', { content: '수정' })).rejects.toThrow(
+        PostNotFoundError,
+      );
     });
   });
 
@@ -179,17 +168,17 @@ describe('PostService', () => {
       const post = buildPost({ author: { id: 'other-uuid' } as any });
       postRepo.findOne.mockResolvedValue(post);
 
-      await expect(
-        service.remove('post-uuid', 'user-uuid', UserRole.USER),
-      ).rejects.toThrow(PostForbiddenError);
+      await expect(service.remove('post-uuid', 'user-uuid', UserRole.USER)).rejects.toThrow(
+        PostForbiddenError,
+      );
     });
 
     it('존재하지 않는 게시글 삭제 시 PostNotFoundError를 던진다', async () => {
       postRepo.findOne.mockResolvedValue(null);
 
-      await expect(
-        service.remove('bad-id', 'user-uuid', UserRole.USER),
-      ).rejects.toThrow(PostNotFoundError);
+      await expect(service.remove('bad-id', 'user-uuid', UserRole.USER)).rejects.toThrow(
+        PostNotFoundError,
+      );
     });
   });
 });

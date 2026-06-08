@@ -11,10 +11,19 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard, JwtRefreshGuard } from '@app/common';
+import { Request as ExpressRequest } from 'express';
 
 import { LoginDto } from './dto/request/login.dto';
 import { SignupDto } from './dto/request/signup.dto';
 import { AuthServicePort } from './auth.service.port';
+
+type AuthenticatedRequest = ExpressRequest & {
+  user: {
+    id: string;
+    tokenId?: string;
+    role?: string;
+  };
+};
 
 @ApiTags('auth')
 @Controller('auth')
@@ -48,22 +57,22 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtRefreshGuard)
   @ApiOperation({ summary: '로그아웃' })
-  async logout(@Request() req: any): Promise<void> {
-    await this.authService.logout(req.user.id, req.user.tokenId);
+  async logout(@Request() req: AuthenticatedRequest): Promise<void> {
+    await this.authService.logout(req.user.id, req.user.tokenId as string);
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshGuard)
   @ApiOperation({ summary: 'Access Token 갱신' })
-  async refresh(@Request() req: any) {
-    return this.authService.refresh(req.user.id, req.user.tokenId);
+  async refresh(@Request() req: AuthenticatedRequest) {
+    return this.authService.refresh(req.user.id, req.user.tokenId as string);
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '내 정보 조회' })
-  getMe(@Request() req: any) {
+  getMe(@Request() req: AuthenticatedRequest) {
     return req.user;
   }
 }

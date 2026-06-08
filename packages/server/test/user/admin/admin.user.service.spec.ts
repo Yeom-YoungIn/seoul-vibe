@@ -3,8 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserRole } from '@app/common';
-import { User } from '../../auth/shared/entities/user.entity';
-import { AdminUserService } from './admin.user.service';
+import { User } from '../../../src/auth/shared/entities/user.entity';
+import { AdminUserService } from '../../../src/user/admin/admin.user.service';
 
 const mockUserRepository = () => ({
   findAndCount: jest.fn(),
@@ -38,10 +38,7 @@ describe('AdminUserService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AdminUserService,
-        { provide: getRepositoryToken(User), useFactory: mockUserRepository },
-      ],
+      providers: [AdminUserService, { provide: getRepositoryToken(User), useFactory: mockUserRepository }],
     }).compile();
 
     service = module.get(AdminUserService);
@@ -93,9 +90,7 @@ describe('AdminUserService', () => {
 
       const result = await service.changeRole('user-uuid', UserRole.ADMIN);
 
-      expect(userRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ role: UserRole.ADMIN }),
-      );
+      expect(userRepo.save).toHaveBeenCalledWith(expect.objectContaining({ role: UserRole.ADMIN }));
       expect(result.role).toBe(UserRole.ADMIN);
     });
 

@@ -40,18 +40,13 @@ export class AdminContentService {
   }
 
   async findAll(dto: ListAdminContentDto): Promise<[Content[], number]> {
-    const qb = this.contentRepository
-      .createQueryBuilder('content')
-      .leftJoinAndSelect('content.translations', 'translation')
-      .orderBy('content.createdAt', 'DESC')
-      .skip(dto.skip ?? 0)
-      .take(dto.take ?? 20);
-
-    if (dto.isPublished !== undefined) {
-      qb.andWhere('content.isPublished = :isPublished', { isPublished: dto.isPublished });
-    }
-
-    return qb.getManyAndCount();
+    return this.contentRepository.findAndCount({
+      where: dto.isPublished === undefined ? {} : { isPublished: dto.isPublished },
+      relations: ['translations'],
+      order: { createdAt: 'DESC' },
+      skip: dto.skip ?? 0,
+      take: dto.take ?? 20,
+    });
   }
 
   async findOne(id: string): Promise<Content> {
