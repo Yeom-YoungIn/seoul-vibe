@@ -1,0 +1,28 @@
+# 목적 - prod 환경에서 Terraform 루트 모듈을 실행할 때 필요한 입력값 예시를 제공하기 위해 추가됨
+# 설명 - 운영 환경용 별도 CIDR과 더 큰 노드 그룹 예시를 제공하며, 실제 용량은 트래픽과 비용 정책에 맞게 조정한다.
+environment = "prod"
+aws_region  = "ap-northeast-2"
+
+# Pin these after checking the AWS-supported EKS version matrix for the target account.
+# kubernetes_version = "1.31"
+# node_ami_type      = "AL2023_x86_64_STANDARD"
+
+vpc_cidr             = "10.30.0.0/16"
+public_subnet_cidrs  = ["10.30.0.0/20", "10.30.16.0/20"]
+private_subnet_cidrs = ["10.30.128.0/20", "10.30.144.0/20"]
+
+node_instance_types = ["t3.large"]
+node_min_size       = 2
+node_desired_size   = 3
+node_max_size       = 6
+
+app_namespace = "seoul-vibe"
+
+# Required when enable_alb_controller = true. Create this from the official AWS Load Balancer Controller IAM policy.
+alb_controller_policy_arn = "arn:aws:iam::123456789012:policy/AWSLoadBalancerControllerIAMPolicy"
+
+# For hardened production, prefer private endpoint access from CI/VPN/bastion.
+# cluster_endpoint_public_access = false
+# bootstrap_cluster_creator_admin_permissions = false
+
+create_app_secret = false

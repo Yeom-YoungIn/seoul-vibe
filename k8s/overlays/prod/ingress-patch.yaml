@@ -1,0 +1,18 @@
+# 목적 - prod 환경의 ALB host를 base ingress에 주입하기 위해 추가됨
+# 설명 - 현재 Terraform 범위에 ACM/DNS가 없으므로 HTTP host만 제공하며, HTTPS는 certificate ARN 확보 후 별도 패치로 추가한다.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: seoul-vibe
+spec:
+  rules:
+    - host: seoul-vibe.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: seoul-vibe-client
+                port:
+                  name: http

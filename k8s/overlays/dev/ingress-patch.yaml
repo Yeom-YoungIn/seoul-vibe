@@ -1,0 +1,18 @@
+# 목적 - dev 환경의 ALB host를 base ingress에 주입하기 위해 추가됨
+# 설명 - 인증서가 없는 기본 dev 배포를 위해 HTTP listener만 유지하고, 실제 도메인은 배포 파이프라인에서 교체한다.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: seoul-vibe
+spec:
+  rules:
+    - host: dev.seoul-vibe.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: seoul-vibe-client
+                port:
+                  name: http
