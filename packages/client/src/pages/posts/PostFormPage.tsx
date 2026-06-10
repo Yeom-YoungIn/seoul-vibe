@@ -1,7 +1,3 @@
-/**
- * 목적 - 게시글 작성/수정 화면에서 업로드와 위치 입력, 저장 에러 처리를 안정적으로 제공하기 위해 수정됨
- * 설명 - 이미지 업로드, 지도 기반 위치 선택, 작성/수정 분기, 공통 API 에러 메시지 처리를 한 화면에서 관리한다.
- */
 import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { postsApi, PostCategory, CreatePostPayload } from '../../lib/api/posts';
@@ -116,7 +112,9 @@ export default function PostFormPage({ mode }: Props) {
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as PostCategory }))}
           >
             {CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
             ))}
           </select>
         </label>
@@ -136,11 +134,15 @@ export default function PostFormPage({ mode }: Props) {
         <div className="form-label">
           Location on map <span className="upload-hint">(선택)</span>
           <div style={{ marginTop: '0.35rem' }}>
-            <Suspense fallback={<div style={{ height: 240, background: '#f1f5f9', borderRadius: 12 }} />}>
+            <Suspense
+              fallback={<div style={{ height: 240, background: '#f1f5f9', borderRadius: 12 }} />}
+            >
               <LocationPicker
                 lat={form.locationLat}
                 lng={form.locationLng}
-                onChange={(lat, lng) => setForm((f) => ({ ...f, locationLat: lat, locationLng: lng }))}
+                onChange={(lat, lng) =>
+                  setForm((f) => ({ ...f, locationLat: lat, locationLng: lng }))
+                }
               />
             </Suspense>
             {form.locationLat && (
@@ -148,7 +150,9 @@ export default function PostFormPage({ mode }: Props) {
                 type="button"
                 className="btn btn-ghost btn-sm"
                 style={{ marginTop: '0.5rem' }}
-                onClick={() => setForm((f) => ({ ...f, locationLat: undefined, locationLng: undefined }))}
+                onClick={() =>
+                  setForm((f) => ({ ...f, locationLat: undefined, locationLng: undefined }))
+                }
               >
                 위치 초기화
               </button>
@@ -177,7 +181,6 @@ export default function PostFormPage({ mode }: Props) {
             />
             <span className="upload-hint">JPG, PNG, GIF, WEBP · max 5 MB each</span>
           </div>
-
           {(form.images ?? []).length > 0 && (
             <div className="image-preview-grid">
               {(form.images ?? []).map((url, i) => (

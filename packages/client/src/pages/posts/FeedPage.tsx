@@ -1,7 +1,3 @@
-/**
- * 목적 - 게시글 피드의 필터링과 더보기 로딩을 안정적으로 처리하기 위해 수정됨
- * 설명 - 카테고리 변경 시 목록을 재적재하고, 중복 요청을 막으면서 페이지네이션 상태를 ref와 callback으로 관리한다.
- */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { postsApi, Post, PostCategory } from '../../lib/api/posts';
@@ -24,23 +20,26 @@ export default function FeedPage() {
   const skipRef = useRef(0);
   const loadingRef = useRef(false);
 
-  const loadMore = useCallback((reset = false) => {
-    if (loadingRef.current) return;
-    loadingRef.current = true;
-    setLoading(true);
-    const skip = reset ? 0 : skipRef.current;
-    postsApi
-      .getFeed({ category: category || undefined, skip, take: PAGE_SIZE })
-      .then((res) => {
-        setPosts((prev) => (reset ? res.list : [...prev, ...res.list]));
-        skipRef.current = skip + res.list.length;
-        setHasMore(skip + res.list.length < res.count);
-      })
-      .finally(() => {
-        loadingRef.current = false;
-        setLoading(false);
-      });
-  }, [category]);
+  const loadMore = useCallback(
+    (reset = false) => {
+      if (loadingRef.current) return;
+      loadingRef.current = true;
+      setLoading(true);
+      const skip = reset ? 0 : skipRef.current;
+      postsApi
+        .getFeed({ category: category || undefined, skip, take: PAGE_SIZE })
+        .then((res) => {
+          setPosts((prev) => (reset ? res.list : [...prev, ...res.list]));
+          skipRef.current = skip + res.list.length;
+          setHasMore(skip + res.list.length < res.count);
+        })
+        .finally(() => {
+          loadingRef.current = false;
+          setLoading(false);
+        });
+    },
+    [category]
+  );
 
   useEffect(() => {
     skipRef.current = 0;
@@ -85,7 +84,8 @@ export default function FeedPage() {
               )}
               <span className="feed-card-date">
                 {new Date(post.createdAt).toLocaleDateString('en-US', {
-                  month: 'short', day: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
                 })}
               </span>
             </div>

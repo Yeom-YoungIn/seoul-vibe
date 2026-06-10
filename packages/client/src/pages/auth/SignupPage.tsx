@@ -1,7 +1,3 @@
-/**
- * 목적 - 회원가입 실패 메시지 처리와 완료 화면 전환을 단순하게 유지하기 위해 수정됨
- * 설명 - 공통 API 에러 헬퍼를 사용해 에러 해석을 통일하고, 가입 성공 시 이메일 인증 안내 화면으로 전환한다.
- */
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/axios';
@@ -36,9 +32,13 @@ export default function SignupPage() {
       <div className="auth-container">
         <div className="auth-card">
           <h2>Check your email</h2>
-          <p>We sent a verification link to <strong>{form.email}</strong>.</p>
+          <p>
+            We sent a verification link to <strong>{form.email}</strong>.
+          </p>
           <p>Please verify your email to continue.</p>
-          <Link to="/auth/login" className="auth-link">Back to login</Link>
+          <Link to="/auth/login" className="auth-link">
+            Back to login
+          </Link>
         </div>
       </div>
     );
@@ -92,7 +92,10 @@ export default function SignupPage() {
           </button>
         </form>
         <p className="auth-footer">
-          Already have an account? <Link to="/auth/login" className="auth-link">Log in</Link>
+          Already have an account?{' '}
+          <Link to="/auth/login" className="auth-link">
+            Log in
+          </Link>
         </p>
       </div>
     </div>

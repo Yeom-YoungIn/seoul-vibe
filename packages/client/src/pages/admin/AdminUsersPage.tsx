@@ -1,7 +1,3 @@
-/**
- * 목적 - 관리자 사용자 목록 화면의 검색과 페이징 상태를 명확히 분리하기 위해 수정됨
- * 설명 - 입력 중인 검색어와 실제 조회에 적용된 검색어를 분리하고, callback 기반 재조회로 페이지 이동 시 일관된 결과를 유지한다.
- */
 import { useCallback, useEffect, useState } from 'react';
 import { adminUsersApi, AdminUser, UserRole } from '../../lib/api/admin';
 
@@ -28,15 +24,23 @@ export default function AdminUsersPage() {
   const [appliedSearch, setAppliedSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback((s = skip, q = appliedSearch) => {
-    setLoading(true);
-    adminUsersApi
-      .getList({ email: q || undefined, skip: s, take: PAGE_SIZE })
-      .then((res) => { setUsers(res.list); setCount(res.count); })
-      .finally(() => setLoading(false));
-  }, [appliedSearch, skip]);
+  const load = useCallback(
+    (s = skip, q = appliedSearch) => {
+      setLoading(true);
+      adminUsersApi
+        .getList({ email: q || undefined, skip: s, take: PAGE_SIZE })
+        .then((res) => {
+          setUsers(res.list);
+          setCount(res.count);
+        })
+        .finally(() => setLoading(false));
+    },
+    [appliedSearch, skip]
+  );
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +69,9 @@ export default function AdminUsersPage() {
       <section className="admin-users-hero">
         <div>
           <span className="admin-eyebrow">User management</span>
-          <h1 className="admin-page-title">Users <span className="admin-count">{count}</span></h1>
+          <h1 className="admin-page-title">
+            Users <span className="admin-count">{count}</span>
+          </h1>
           <p className="admin-users-subtitle">
             Review account trust signals, adjust permissions, and remove unwanted members.
           </p>
@@ -91,7 +97,9 @@ export default function AdminUsersPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <button className="btn btn-primary btn-sm" type="submit">Search</button>
+        <button className="btn btn-primary btn-sm" type="submit">
+          Search
+        </button>
         {search && (
           <button
             className="btn btn-ghost btn-sm"
@@ -109,7 +117,9 @@ export default function AdminUsersPage() {
 
       <div className="admin-users-toolbar">
         <p className="admin-users-toolbar-copy">
-          {appliedSearch ? `Showing results for "${appliedSearch}"` : 'Showing the most recent user accounts first'}
+          {appliedSearch
+            ? `Showing results for "${appliedSearch}"`
+            : 'Showing the most recent user accounts first'}
         </p>
         <span className="admin-users-toolbar-range">
           {count === 0 ? '0 users' : `${skip + 1}-${Math.min(skip + PAGE_SIZE, count)} of ${count}`}
@@ -169,15 +179,17 @@ export default function AdminUsersPage() {
                   <td>
                     <div className="admin-user-date">
                       <strong>{formatJoinedDate(u.createdAt)}</strong>
-                      <span>{new Date(u.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>
+                        {new Date(u.createdAt).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
                     </div>
                   </td>
                   <td>
                     <div className="td-actions">
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleRemove(u)}
-                      >
+                      <button className="btn btn-danger btn-sm" onClick={() => handleRemove(u)}>
                         Remove
                       </button>
                     </div>
@@ -190,9 +202,23 @@ export default function AdminUsersPage() {
       )}
 
       <div className="pagination">
-        <button className="btn btn-ghost btn-sm" disabled={skip === 0} onClick={() => setSkip((s) => s - PAGE_SIZE)}>← Prev</button>
-        <span className="pagination-info">{skip + 1}–{Math.min(skip + PAGE_SIZE, count)} of {count}</span>
-        <button className="btn btn-ghost btn-sm" disabled={skip + PAGE_SIZE >= count} onClick={() => setSkip((s) => s + PAGE_SIZE)}>Next →</button>
+        <button
+          className="btn btn-ghost btn-sm"
+          disabled={skip === 0}
+          onClick={() => setSkip((s) => s - PAGE_SIZE)}
+        >
+          ← Prev
+        </button>
+        <span className="pagination-info">
+          {skip + 1}–{Math.min(skip + PAGE_SIZE, count)} of {count}
+        </span>
+        <button
+          className="btn btn-ghost btn-sm"
+          disabled={skip + PAGE_SIZE >= count}
+          onClick={() => setSkip((s) => s + PAGE_SIZE)}
+        >
+          Next →
+        </button>
       </div>
     </div>
   );

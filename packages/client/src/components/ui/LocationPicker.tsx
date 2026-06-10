@@ -1,7 +1,3 @@
-/**
- * 목적 - 게시글 작성/수정 화면에서 지도로 위치를 선택할 수 있게 하기 위해 수정됨
- * 설명 - Leaflet 마커 설정을 보정하고, 클릭 좌표 선택과 지도 중심 재조정을 포함한 위치 선택 UI를 제공한다.
- */
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -46,9 +42,18 @@ export default function LocationPicker({ lat, lng, onChange, height = '240px' }:
 
   return (
     <div>
-      <p className="upload-hint" style={{ marginBottom: '0.4rem' }}>지도를 클릭해 위치를 선택하세요</p>
-      <div style={{ height, borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-        <MapContainer center={center} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+      <p className="upload-hint" style={{ marginBottom: '0.4rem' }}>
+        지도를 클릭해 위치를 선택하세요
+      </p>
+      <div
+        style={{ height, borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0' }}
+      >
+        <MapContainer
+          center={center}
+          zoom={14}
+          style={{ height: '100%', width: '100%' }}
+          scrollWheelZoom={false}
+        >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

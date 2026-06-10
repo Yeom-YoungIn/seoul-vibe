@@ -1,7 +1,3 @@
-/**
- * 목적 - 관리자 글 목록/편집 화면의 조회와 저장 흐름을 안정화하기 위해 수정됨
- * 설명 - 공통 API 에러 헬퍼와 useCallback 기반 재조회 로직을 사용해 필터, 페이징, 생성/수정 흐름을 관리한다.
- */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import {
   adminArticlesApi,
@@ -42,11 +38,16 @@ export default function AdminArticlesPage() {
     setLoading(true);
     adminArticlesApi
       .getList({ isPublished, skip, take: PAGE_SIZE })
-      .then((res) => { setArticles(res.list); setCount(res.count); })
+      .then((res) => {
+        setArticles(res.list);
+        setCount(res.count);
+      })
       .finally(() => setLoading(false));
   }, [isPublished, skip]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const openCreate = () => {
     setForm(emptyForm());
@@ -139,8 +140,12 @@ export default function AdminArticlesPage() {
   return (
     <div className="admin-page">
       <div className="admin-page-header">
-        <h1 className="admin-page-title">Articles <span className="admin-count">{count}</span></h1>
-        <button className="btn btn-primary btn-sm" onClick={openCreate}>+ New article</button>
+        <h1 className="admin-page-title">
+          Articles <span className="admin-count">{count}</span>
+        </h1>
+        <button className="btn btn-primary btn-sm" onClick={openCreate}>
+          + New article
+        </button>
       </div>
 
       <div className="admin-filter-row">
@@ -152,7 +157,10 @@ export default function AdminArticlesPage() {
           <button
             key={String(f.val)}
             className={`filter-chip ${isPublished === f.val ? 'active' : ''}`}
-            onClick={() => { setIsPublished(f.val); setSkip(0); }}
+            onClick={() => {
+              setIsPublished(f.val);
+              setSkip(0);
+            }}
           >
             {f.label}
           </button>
@@ -185,14 +193,18 @@ export default function AdminArticlesPage() {
                   <td>{a.publishedAt ? new Date(a.publishedAt).toLocaleDateString() : '—'}</td>
                   <td>{new Date(a.createdAt).toLocaleDateString()}</td>
                   <td className="td-actions">
-                    <button className="btn btn-ghost btn-sm" onClick={() => openEdit(a)}>Edit</button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => openEdit(a)}>
+                      Edit
+                    </button>
                     <button
                       className={`btn btn-sm ${a.isPublished ? 'btn-ghost' : 'btn-primary'}`}
                       onClick={() => handlePublishToggle(a)}
                     >
                       {a.isPublished ? 'Unpublish' : 'Publish'}
                     </button>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleRemove(a.id)}>Delete</button>
+                    <button className="btn btn-danger btn-sm" onClick={() => handleRemove(a.id)}>
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -202,9 +214,23 @@ export default function AdminArticlesPage() {
       )}
 
       <div className="pagination">
-        <button className="btn btn-ghost btn-sm" disabled={skip === 0} onClick={() => setSkip((s) => s - PAGE_SIZE)}>← Prev</button>
-        <span className="pagination-info">{skip + 1}–{Math.min(skip + PAGE_SIZE, count)} of {count}</span>
-        <button className="btn btn-ghost btn-sm" disabled={skip + PAGE_SIZE >= count} onClick={() => setSkip((s) => s + PAGE_SIZE)}>Next →</button>
+        <button
+          className="btn btn-ghost btn-sm"
+          disabled={skip === 0}
+          onClick={() => setSkip((s) => s - PAGE_SIZE)}
+        >
+          ← Prev
+        </button>
+        <span className="pagination-info">
+          {skip + 1}–{Math.min(skip + PAGE_SIZE, count)} of {count}
+        </span>
+        <button
+          className="btn btn-ghost btn-sm"
+          disabled={skip + PAGE_SIZE >= count}
+          onClick={() => setSkip((s) => s + PAGE_SIZE)}
+        >
+          Next →
+        </button>
       </div>
 
       {/* Modal */}
@@ -235,10 +261,20 @@ export default function AdminArticlesPage() {
                         value={t.locale}
                         onChange={(e) => setTranslation(i, 'locale', e.target.value)}
                       >
-                        {LOCALES.map((l) => <option key={l} value={l}>{l}</option>)}
+                        {LOCALES.map((l) => (
+                          <option key={l} value={l}>
+                            {l}
+                          </option>
+                        ))}
                       </select>
                       {form.translations.length > 1 && (
-                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => removeTranslation(i)}>✕</button>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => removeTranslation(i)}
+                        >
+                          ✕
+                        </button>
                       )}
                     </div>
                     <input
@@ -257,11 +293,7 @@ export default function AdminArticlesPage() {
                     />
                   </div>
                 ))}
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={addTranslation}
-                >
+                <button type="button" className="btn btn-ghost btn-sm" onClick={addTranslation}>
                   + Add translation
                 </button>
               </div>
@@ -269,7 +301,9 @@ export default function AdminArticlesPage() {
               {formError && <p className="auth-error">{formError}</p>}
 
               <div className="modal-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>Cancel</button>
+                <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>
+                  Cancel
+                </button>
                 <button type="submit" className="btn btn-primary" disabled={saving}>
                   {saving ? 'Saving…' : 'Save'}
                 </button>
