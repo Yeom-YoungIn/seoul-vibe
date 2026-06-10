@@ -1,7 +1,12 @@
+/**
+ * 목적 - 게시글 작성/수정 화면에서 업로드와 위치 입력, 저장 에러 처리를 안정적으로 제공하기 위해 수정됨
+ * 설명 - 이미지 업로드, 지도 기반 위치 선택, 작성/수정 분기, 공통 API 에러 메시지 처리를 한 화면에서 관리한다.
+ */
 import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { postsApi, PostCategory, CreatePostPayload } from '../../lib/api/posts';
 import { uploadApi } from '../../lib/api/upload';
+import { getApiErrorMessage } from '../../lib/api/error';
 
 const LocationPicker = lazy(() => import('../../components/ui/LocationPicker'));
 
@@ -77,9 +82,8 @@ export default function PostFormPage({ mode }: Props) {
         await postsApi.update(id, form);
         navigate(`/posts/${id}`);
       }
-    } catch (err: any) {
-      const msg = err.response?.data?.message ?? 'Failed to save post.';
-      setError(Array.isArray(msg) ? msg.join(', ') : msg);
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Failed to save post.'));
     } finally {
       setLoading(false);
     }

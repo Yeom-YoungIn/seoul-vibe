@@ -1,4 +1,8 @@
-import { useEffect, useState } from 'react';
+/**
+ * 목적 - 관리자 사용자 목록 화면의 검색과 페이징 상태를 명확히 분리하기 위해 수정됨
+ * 설명 - 입력 중인 검색어와 실제 조회에 적용된 검색어를 분리하고, callback 기반 재조회로 페이지 이동 시 일관된 결과를 유지한다.
+ */
+import { useCallback, useEffect, useState } from 'react';
 import { adminUsersApi, AdminUser, UserRole } from '../../lib/api/admin';
 
 const PAGE_SIZE = 20;
@@ -21,22 +25,23 @@ export default function AdminUsersPage() {
   const [count, setCount] = useState(0);
   const [skip, setSkip] = useState(0);
   const [search, setSearch] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const load = (s = skip, q = search) => {
+  const load = useCallback((s = skip, q = appliedSearch) => {
     setLoading(true);
     adminUsersApi
       .getList({ email: q || undefined, skip: s, take: PAGE_SIZE })
       .then((res) => { setUsers(res.list); setCount(res.count); })
       .finally(() => setLoading(false));
-  };
+  }, [appliedSearch, skip]);
 
-  useEffect(() => { load(); }, [skip]);
+  useEffect(() => { load(); }, [load]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSkip(0);
-    load(0, search);
+    setAppliedSearch(search);
   };
 
   const handleRoleChange = async (user: AdminUser, role: UserRole) => {
@@ -94,7 +99,7 @@ export default function AdminUsersPage() {
             onClick={() => {
               setSearch('');
               setSkip(0);
-              load(0, '');
+              setAppliedSearch('');
             }}
           >
             Clear
@@ -104,7 +109,7 @@ export default function AdminUsersPage() {
 
       <div className="admin-users-toolbar">
         <p className="admin-users-toolbar-copy">
-          {search ? `Showing results for "${search}"` : 'Showing the most recent user accounts first'}
+          {appliedSearch ? `Showing results for "${appliedSearch}"` : 'Showing the most recent user accounts first'}
         </p>
         <span className="admin-users-toolbar-range">
           {count === 0 ? '0 users' : `${skip + 1}-${Math.min(skip + PAGE_SIZE, count)} of ${count}`}

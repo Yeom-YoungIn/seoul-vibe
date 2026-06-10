@@ -1,7 +1,12 @@
+/**
+ * 목적 - 로그인 실패 메시지 처리와 인증 후 이동 흐름을 안정적으로 유지하기 위해 수정됨
+ * 설명 - 공통 API 에러 헬퍼를 사용해 사용자 메시지를 통일하고, 로그인 성공 시 토큰 저장과 권한별 라우팅을 수행한다.
+ */
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/axios';
 import { useAuth } from '../../hooks/useAuth';
+import { getApiErrorMessage } from '../../lib/api/error';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -25,9 +30,8 @@ export default function LoginPage() {
       localStorage.setItem('refreshToken', refreshToken);
       const user = await refreshAuth();
       navigate(user?.role === 'admin' ? '/admin' : '/');
-    } catch (err: any) {
-      const msg = err.response?.data?.message ?? 'Login failed. Please try again.';
-      setError(Array.isArray(msg) ? msg.join(', ') : msg);
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Login failed. Please try again.'));
     } finally {
       setLoading(false);
     }

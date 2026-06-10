@@ -1,10 +1,14 @@
+/**
+ * 목적 - 저장된 위치를 지도 위에 표시하는 읽기 전용 지도 컴포넌트를 제공하기 위해 수정됨
+ * 설명 - Leaflet 마커 아이콘 경로를 보정하고, 전달된 좌표와 라벨을 기준으로 지도를 다시 중심 이동시킨다.
+ */
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Leaflet 기본 마커 아이콘 경로 수정 (번들러 이슈)
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as L.Icon.Default & { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',

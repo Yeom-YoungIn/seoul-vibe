@@ -1,4 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+/**
+ * 목적 - 게시글 피드의 필터링과 더보기 로딩을 안정적으로 처리하기 위해 수정됨
+ * 설명 - 카테고리 변경 시 목록을 재적재하고, 중복 요청을 막으면서 페이지네이션 상태를 ref와 callback으로 관리한다.
+ */
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { postsApi, Post, PostCategory } from '../../lib/api/posts';
 import Spinner from '../../components/ui/Spinner';
@@ -18,9 +22,11 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState<PostCategory | ''>('');
   const skipRef = useRef(0);
+  const loadingRef = useRef(false);
 
-  const loadMore = (reset = false) => {
-    if (loading) return;
+  const loadMore = useCallback((reset = false) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
     const skip = reset ? 0 : skipRef.current;
     postsApi
@@ -30,13 +36,16 @@ export default function FeedPage() {
         skipRef.current = skip + res.list.length;
         setHasMore(skip + res.list.length < res.count);
       })
-      .finally(() => setLoading(false));
-  };
+      .finally(() => {
+        loadingRef.current = false;
+        setLoading(false);
+      });
+  }, [category]);
 
   useEffect(() => {
     skipRef.current = 0;
     loadMore(true);
-  }, [category]);
+  }, [category, loadMore]);
 
   return (
     <div className="page">

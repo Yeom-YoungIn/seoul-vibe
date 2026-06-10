@@ -1,10 +1,15 @@
-import { FormEvent, useEffect, useState } from 'react';
+/**
+ * 목적 - 관리자 글 목록/편집 화면의 조회와 저장 흐름을 안정화하기 위해 수정됨
+ * 설명 - 공통 API 에러 헬퍼와 useCallback 기반 재조회 로직을 사용해 필터, 페이징, 생성/수정 흐름을 관리한다.
+ */
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import {
   adminArticlesApi,
   AdminArticle,
   CreateArticlePayload,
   UpdateArticlePayload,
 } from '../../lib/api/admin';
+import { getApiErrorMessage } from '../../lib/api/error';
 
 const PAGE_SIZE = 20;
 const LOCALES = ['EN', 'KO'] as const;
@@ -33,15 +38,15 @@ export default function AdminArticlesPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true);
     adminArticlesApi
       .getList({ isPublished, skip, take: PAGE_SIZE })
       .then((res) => { setArticles(res.list); setCount(res.count); })
       .finally(() => setLoading(false));
-  };
+  }, [isPublished, skip]);
 
-  useEffect(() => { load(); }, [skip, isPublished]);
+  useEffect(() => { load(); }, [load]);
 
   const openCreate = () => {
     setForm(emptyForm());
@@ -91,9 +96,8 @@ export default function AdminArticlesPage() {
       }
       setModal(null);
       load();
-    } catch (err: any) {
-      const msg = err.response?.data?.message ?? 'Failed to save.';
-      setFormError(Array.isArray(msg) ? msg.join(', ') : msg);
+    } catch (err) {
+      setFormError(getApiErrorMessage(err, 'Failed to save.'));
     } finally {
       setSaving(false);
     }

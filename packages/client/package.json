@@ -18,6 +18,8 @@
     "react-router-dom": "^7.14.0"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
     "@types/leaflet": "^1.9.21",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",

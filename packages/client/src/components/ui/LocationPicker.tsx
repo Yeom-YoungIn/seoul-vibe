@@ -1,9 +1,13 @@
+/**
+ * 목적 - 게시글 작성/수정 화면에서 지도로 위치를 선택할 수 있게 하기 위해 수정됨
+ * 설명 - Leaflet 마커 설정을 보정하고, 클릭 좌표 선택과 지도 중심 재조정을 포함한 위치 선택 UI를 제공한다.
+ */
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as L.Icon.Default & { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
