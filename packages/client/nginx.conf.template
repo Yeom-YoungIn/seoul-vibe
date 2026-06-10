@@ -1,0 +1,42 @@
+# 목적 - 프론트엔드 정적 파일 서빙과 API/업로드 프록시를 한 컨테이너에서 처리하기 위해 추가됨
+# 설명 - SPA 라우팅, health check, /api 프록시, /uploads 프록시, ALB가 넘긴 proto 보존을 포함한 nginx 템플릿이다.
+map $http_x_forwarded_proto $proxy_x_forwarded_proto {
+  default $http_x_forwarded_proto;
+  "" $scheme;
+}
+
+server {
+  listen 80;
+  server_name _;
+
+  root /usr/share/nginx/html;
+  index index.html;
+
+  location = /healthz {
+    access_log off;
+    add_header Content-Type text/plain;
+    return 200 "ok\n";
+  }
+
+  location /api/ {
+    proxy_pass ${SERVER_UPSTREAM}/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
+  }
+
+  location /uploads/ {
+    proxy_pass ${SERVER_UPSTREAM}/uploads/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
+  }
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}

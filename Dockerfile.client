@@ -1,0 +1,25 @@
+# 목적 - 프론트엔드 Vite 앱을 컨테이너 이미지로 빌드하고 배포하기 위해 추가됨
+# 설명 - Node 단계에서 정적 자산을 빌드한 뒤 nginx 런타임 이미지로 복사하고, SERVER_UPSTREAM 기반 프록시 구성을 사용한다.
+FROM node:22-alpine AS build
+
+WORKDIR /app
+
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=${VITE_API_URL}
+
+COPY package*.json ./
+COPY packages/client/package.json packages/client/package.json
+COPY packages/server/package.json packages/server/package.json
+RUN npm ci
+
+COPY packages/client packages/client
+RUN npm run build:client
+
+FROM nginx:1.27-alpine AS runtime
+
+ENV SERVER_UPSTREAM=http://seoul-vibe-server:3000
+
+COPY packages/client/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY --from=build /app/packages/client/dist /usr/share/nginx/html
+
+EXPOSE 80

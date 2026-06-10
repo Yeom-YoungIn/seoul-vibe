@@ -1,0 +1,33 @@
+# 목적 - NestJS 백엔드 서버를 컨테이너 이미지로 빌드하고 실행하기 위해 추가됨
+# 설명 - 빌드 단계에서 서버 산출물을 만든 뒤 production 의존성만 포함한 런타임 이미지로 복사해 EKS 배포에 맞는 실행 형태를 제공한다.
+FROM node:22-alpine AS build
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY packages/client/package.json packages/client/package.json
+COPY packages/server/package.json packages/server/package.json
+RUN npm ci
+
+COPY packages/server packages/server
+RUN npm run build:server
+
+FROM node:22-alpine AS runtime
+
+ENV NODE_ENV=production
+WORKDIR /app
+
+COPY package*.json ./
+COPY packages/client/package.json packages/client/package.json
+COPY packages/server/package.json packages/server/package.json
+RUN npm ci --omit=dev --workspace packages/server --include-workspace-root=false \
+  && npm cache clean --force
+
+COPY --from=build /app/packages/server/dist packages/server/dist
+RUN mkdir -p packages/server/dist/uploads \
+  && chown -R node:node packages/server/dist/uploads
+
+USER node
+EXPOSE 3000
+
+CMD ["node", "packages/server/dist/src/main.js"]

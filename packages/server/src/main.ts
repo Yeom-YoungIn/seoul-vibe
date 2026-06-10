@@ -1,3 +1,7 @@
+/**
+ * 목적 - EKS/프록시 환경에서 백엔드 부팅, 정적 업로드 노출, Swagger, CORS, health probe 동작을 안정화하기 위해 수정됨
+ * 설명 - trust proxy 설정과 uploads 정적 경로, 전역 파이프/필터/인터셉터, Swagger, 포트 및 CORS 초기화를 한 곳에서 수행한다.
+ */
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -13,6 +17,8 @@ import {
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.set('trust proxy', 1);
+
   const port = process.env.PORT || 3000;
   const corsOrigin = process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:5173'];
 

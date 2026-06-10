@@ -1,0 +1,24 @@
+# 목적 - EKS 배포용 Kubernetes base 리소스를 한 번에 조합하기 위해 추가됨
+# 설명 - namespace, deployment, service, ingress, PVC를 묶고 이미지 이름과 태그를 별도 배포 레이어에서 바꿔 끼울 수 있게 한다.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: seoul-vibe
+
+resources:
+  - namespace.yaml
+  - server-configmap.yaml
+  - server-uploads-pvc.yaml
+  - server-deployment.yaml
+  - server-service.yaml
+  - client-deployment.yaml
+  - client-service.yaml
+  - ingress.yaml
+
+images:
+  - name: seoul-vibe-client
+    newName: 000000000000.dkr.ecr.ap-northeast-2.amazonaws.com/seoul-vibe-client
+    newTag: sha-placeholder
+  - name: seoul-vibe-server
+    newName: 000000000000.dkr.ecr.ap-northeast-2.amazonaws.com/seoul-vibe-server
+    newTag: sha-placeholder

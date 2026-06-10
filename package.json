@@ -14,6 +14,8 @@
     "build:server": "npm --workspace packages/server run build",
     "lint:server": "npm --workspace packages/server run lint",
     "start:server": "npm --workspace packages/server run start",
+    "docker:build:client": "docker build -f Dockerfile.client -t seoul-vibe-client:local .",
+    "docker:build:server": "docker build -f Dockerfile.server -t seoul-vibe-server:local .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
