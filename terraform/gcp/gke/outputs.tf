@@ -14,3 +14,19 @@ output "name_prefix" {
   description = "Common prefix for GCP resource names."
   value       = local.name_prefix
 }
+
+output "artifact_registry_repository_ids" {
+  description = "Artifact Registry repository IDs by application component."
+  value = {
+    for component, repository in google_artifact_registry_repository.app :
+    component => repository.repository_id
+  }
+}
+
+output "artifact_registry_image_prefixes" {
+  description = "Docker image prefixes by application component."
+  value = {
+    for component, repository in google_artifact_registry_repository.app :
+    component => "${var.gcp_region}-docker.pkg.dev/${var.gcp_project_id}/${repository.repository_id}"
+  }
+}
