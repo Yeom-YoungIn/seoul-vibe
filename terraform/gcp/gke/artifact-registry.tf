@@ -16,4 +16,14 @@ resource "google_artifact_registry_repository" "app" {
       keep_count = 10
     }
   }
+
+  cleanup_policies {
+    id     = "delete-untagged-images-after-7-days"
+    action = "DELETE"
+
+    condition {
+      tag_state  = "UNTAGGED"
+      older_than = "604800s"
+    }
+  }
 }
