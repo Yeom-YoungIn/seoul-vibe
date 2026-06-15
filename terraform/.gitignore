@@ -1,9 +1,9 @@
 # 목적 - Terraform 로컬 상태와 민감한 plan/state 파일이 Git에 들어가지 않도록 하기 위해 추가됨
 # 설명 - provider 캐시, tfstate, plan, override 파일은 환경별 값과 민감 정보를 포함할 수 있어 저장소에서 제외한다.
 .terraform/
-envs/*/backend.hcl
-envs/*/terraform.tfvars
-envs/*/terraform.tfvars.json
+**/envs/*/backend.hcl
+**/envs/*/terraform.tfvars
+**/envs/*/terraform.tfvars.json
 *.tfstate
 *.tfstate.*
 *.tfplan

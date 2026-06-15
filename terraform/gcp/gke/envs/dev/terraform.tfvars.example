@@ -1,0 +1,5 @@
+# 목적 - dev 환경에서 GCP GKE root module을 실행할 때 필요한 입력값 예시를 제공하기 위해 추가됨
+# 설명 - 서울 리전과 dev 환경명을 기본 예시로 두고, 실제 GCP project에 맞게 복사 후 수정한다.
+environment    = "dev"
+gcp_project_id = "CHANGE_ME"
+gcp_region     = "asia-northeast3"

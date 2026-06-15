@@ -1,10 +1,10 @@
 <!--
 목적 - 현재 저장소의 Terraform IaC와 Kubernetes base 사이의 EKS 배포 책임 범위를 문서화하기 위해 수정됨
-설명 - 컨테이너 빌드, Terraform 기반 EKS/ECR/ALB/EFS 선행 인프라, Kustomize base 적용 순서와 필요한 입력값을 정리한다.
+설명 - 컨테이너 빌드, Terraform 기반 AWS EKS/ECR/ALB/EFS 선행 인프라, Kustomize base 적용 순서와 필요한 입력값을 정리한다.
 -->
 # EKS Deployment
 
-This repository owns application container images, Kubernetes application manifests, and the Terraform IaC baseline under `terraform/`.
+This repository owns application container images, Kubernetes application manifests, and the AWS EKS Terraform IaC baseline under `terraform/aws/eks`.
 
 Terraform provides EKS, ECR, node capacity, IAM/IRSA, AWS Load Balancer Controller prerequisites, EFS-backed `efs-sc` storage, the application namespace, and an optional Secret injection path. DNS, ACM certificates, external databases, and production secret values still need environment-specific decisions before a real production rollout.
 
@@ -31,7 +31,7 @@ kubectl kustomize k8s/overlays/dev
 kubectl kustomize k8s/overlays/prod
 ```
 
-Apply only after `terraform/` has created or configured:
+Apply only after `terraform/aws/eks` has created or configured:
 
 - EKS cluster and node capacity
 - ECR repositories for `client` and `server`
@@ -46,10 +46,10 @@ Use `k8s/base` as the shared manifest contract. Use `k8s/overlays/dev` or `k8s/o
 
 ## Terraform Flow
 
-Run from the Terraform root:
+Run from the AWS EKS Terraform root:
 
 ```bash
-cd terraform
+cd terraform/aws/eks
 cp envs/dev/backend.hcl.example envs/dev/backend.hcl
 cp envs/dev/terraform.tfvars.example envs/dev/terraform.tfvars
 terraform init -backend-config=envs/dev/backend.hcl

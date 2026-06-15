@@ -1,6 +1,6 @@
 <!--
 목적 - 현재 레포의 애플리케이션, Kubernetes base, Terraform IaC 진입점을 한눈에 안내하기 위해 수정됨
-설명 - 프론트엔드/백엔드 실행 방법과 함께 EKS 배포에 필요한 Docker, k8s/base, terraform/ 위치를 README에서 연결한다.
+설명 - 프론트엔드/백엔드 실행 방법과 함께 EKS/GKE 배포에 필요한 Docker, k8s/base, terraform/ 위치를 README에서 연결한다.
 -->
 # Seoul Vibe Monorepo
 
@@ -44,12 +44,16 @@ npm install
 - Client container: `npm run docker:build:client`
 - Server container: `npm run docker:build:server`
 
-## EKS deployment
+## Cloud deployment
 
 - Application container definitions live in `Dockerfile.client` and `Dockerfile.server`.
 - Kubernetes base manifests live in `k8s/base`.
 - Environment overlays live in `k8s/overlays/dev` and `k8s/overlays/prod`.
-- Terraform/IaC baseline lives in `terraform` and provides EKS, ECR, node groups, IAM/IRSA, AWS Load Balancer Controller prerequisites, EFS-backed `efs-sc`, namespace setup, and an optional Secret injection path.
+- Terraform/IaC root modules live under `terraform` by cloud:
+  - AWS EKS: `terraform/aws/eks`
+  - GCP GKE: `terraform/gcp/gke`
+- The AWS EKS module provides EKS, ECR, node groups, IAM/IRSA, AWS Load Balancer Controller prerequisites, EFS-backed `efs-sc`, namespace setup, and an optional Secret injection path.
+- The GCP GKE module currently provides provider/backend/env structure for a future GKE baseline.
 - Deployment details and required secret keys are documented in `docs/deployment/eks.md`.
 
 ## Lint

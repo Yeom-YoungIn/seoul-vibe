@@ -1,0 +1,4 @@
+# 목적 - dev 환경 GCP Terraform state backend 설정 예시를 제공하기 위해 추가됨
+# 설명 - 실제 GCS bucket을 준비한 뒤 terraform init -backend-config에 전달한다.
+bucket = "CHANGE_ME-seoul-vibe-terraform-state"
+prefix = "gcp/dev/gke"

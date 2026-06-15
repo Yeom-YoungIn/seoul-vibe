@@ -2,10 +2,10 @@
 # 설명 - 예시 tfvars/backend 파일을 복사해 개발용 EKS 인프라를 초기화, 검토, 적용하는 흐름을 안내한다.
 # Terraform Dev Environment
 
-Use this directory only for environment input examples. Run Terraform from the repository `terraform/` root:
+Use this directory only for environment input examples. Run Terraform from the AWS EKS root module:
 
 ```bash
-cd terraform
+cd terraform/aws/eks
 cp envs/dev/terraform.tfvars.example envs/dev/terraform.tfvars
 cp envs/dev/backend.hcl.example envs/dev/backend.hcl
 terraform init -backend-config=envs/dev/backend.hcl

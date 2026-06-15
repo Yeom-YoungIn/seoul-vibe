@@ -6,7 +6,7 @@ resource "kubernetes_namespace" "app" {
 
     labels = {
       "app.kubernetes.io/part-of" = var.project_name
-      "environment"              = var.environment
+      "environment"               = var.environment
     }
   }
 

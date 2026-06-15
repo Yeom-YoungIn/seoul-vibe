@@ -2,10 +2,10 @@
 # 설명 - 운영 적용 전 plan 검토, state backend 분리, 민감값 관리 원칙을 명시해 dev와 prod가 섞이지 않게 한다.
 # Terraform Prod Environment
 
-Use this directory only for environment input examples. Run Terraform from the repository `terraform/` root:
+Use this directory only for environment input examples. Run Terraform from the AWS EKS root module:
 
 ```bash
-cd terraform
+cd terraform/aws/eks
 cp envs/prod/terraform.tfvars.example envs/prod/terraform.tfvars
 cp envs/prod/backend.hcl.example envs/prod/backend.hcl
 terraform init -backend-config=envs/prod/backend.hcl

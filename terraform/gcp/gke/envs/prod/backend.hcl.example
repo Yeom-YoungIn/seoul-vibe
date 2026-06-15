@@ -1,0 +1,4 @@
+# 목적 - prod 환경 GCP Terraform state backend 설정 예시를 제공하기 위해 추가됨
+# 설명 - 운영용 GCS bucket/prefix를 dev와 분리해 Terraform state 충돌을 방지한다.
+bucket = "CHANGE_ME-seoul-vibe-terraform-state"
+prefix = "gcp/prod/gke"

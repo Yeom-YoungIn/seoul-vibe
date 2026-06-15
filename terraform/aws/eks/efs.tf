@@ -44,8 +44,8 @@ resource "aws_efs_mount_target" "uploads" {
   count = var.enable_efs_csi_driver ? var.az_count : 0
 
   file_system_id  = aws_efs_file_system.uploads[0].id
-  subnet_id        = aws_subnet.private[count.index].id
-  security_groups  = [aws_security_group.efs[0].id]
+  subnet_id       = aws_subnet.private[count.index].id
+  security_groups = [aws_security_group.efs[0].id]
 }
 
 resource "aws_eks_addon" "efs_csi" {
