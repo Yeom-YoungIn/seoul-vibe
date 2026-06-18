@@ -3,6 +3,14 @@
 locals {
   name_prefix = "${var.project_name}-${var.environment}"
 
+  labels = {
+    project     = var.project_name
+    environment = var.environment
+    managed_by  = "terraform"
+  }
+
+  gke_cluster_name = coalesce(var.gke_cluster_name, "${local.name_prefix}-gke")
+
   artifact_registry_repositories = {
     client = {
       repository_id = "${local.name_prefix}-client"

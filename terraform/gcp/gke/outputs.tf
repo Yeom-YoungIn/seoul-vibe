@@ -30,3 +30,23 @@ output "artifact_registry_image_prefixes" {
     component => "${var.gcp_region}-docker.pkg.dev/${var.gcp_project_id}/${repository.repository_id}"
   }
 }
+
+output "gke_cluster_name" {
+  description = "GKE cluster name."
+  value       = google_container_cluster.primary.name
+}
+
+output "gke_cluster_location" {
+  description = "GKE cluster location."
+  value       = google_container_cluster.primary.location
+}
+
+output "gke_node_service_account" {
+  description = "Service account used by GKE nodes."
+  value       = google_service_account.gke_nodes.email
+}
+
+output "configure_kubeconfig_command" {
+  description = "Command that configures kubectl to use this GKE cluster."
+  value       = "gcloud container clusters get-credentials ${google_container_cluster.primary.name} --region ${google_container_cluster.primary.location} --project ${var.gcp_project_id}"
+}

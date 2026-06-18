@@ -8,6 +8,10 @@ resource "google_artifact_registry_repository" "app" {
   description   = each.value.description
   format        = "DOCKER"
 
+  depends_on = [
+    google_project_service.required,
+  ]
+
   cleanup_policies {
     id     = "keep-recent-images"
     action = "KEEP"

@@ -3,3 +3,9 @@
 environment    = "dev"
 gcp_project_id = "CHANGE_ME"
 gcp_region     = "asia-northeast3"
+
+# Low-cost dev default. Increase only when the cluster needs more capacity.
+gke_node_locations    = ["asia-northeast3-a"]
+gke_node_count        = 1
+gke_node_machine_type = "e2-medium"
+gke_node_disk_type    = "pd-standard"
