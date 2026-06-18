@@ -17,7 +17,7 @@ docker build -f Dockerfile.client -t seoul-vibe-client:local .
 docker build -f Dockerfile.server -t seoul-vibe-server:local .
 ```
 
-For EKS, tag and push both images to ECR. The Kubernetes base uses placeholder image names and immutable placeholder tags in `k8s/base/kustomization.yaml`; Terraform outputs `ecr_repository_urls`, and the deployment pipeline should replace `newName` and `newTag` with the ECR repository and a release tag or digest.
+For EKS, tag and push both images to ECR. The Kubernetes base uses local image names in the Deployment manifests; AWS overlays replace `newName` and `newTag` with the ECR repository and a release tag or digest.
 
 The client image builds the Vite app with `VITE_API_URL=/api` by default. The nginx runtime proxies `/api/*` to `SERVER_UPSTREAM`, which defaults to `http://seoul-vibe-server:3000`.
 
@@ -27,7 +27,7 @@ Render the base locally:
 
 ```bash
 kubectl kustomize k8s/base
-kubectl kustomize k8s/overlays/dev
+kubectl kustomize k8s/overlays/aws/dev
 kubectl kustomize k8s/overlays/prod
 ```
 
@@ -42,7 +42,7 @@ Apply only after `terraform/aws/eks` has created or configured:
 
 Terraform does not currently create DNS records, ACM certificates, or a PostgreSQL database. Add those in a later IaC iteration once domain, certificate, and database requirements are fixed.
 
-Use `k8s/base` as the shared manifest contract. Use `k8s/overlays/dev` or `k8s/overlays/prod` for actual environment rendering so host, CORS origin, and ECR image names are not hardcoded in the base layer.
+Use `k8s/base` as the shared manifest contract. Use `k8s/overlays/aws/dev` or `k8s/overlays/prod` for actual EKS environment rendering so host, CORS origin, and ECR image names are not hardcoded in the base layer.
 
 ## Terraform Flow
 
@@ -68,5 +68,5 @@ Use `envs/prod/*` for production. Keep real backend config, tfvars, state, and p
 - Public API path from the browser: `/api`
 - Public upload path from the browser: `/uploads`
 - Internal API service: `http://seoul-vibe-server:3000`
-- Uploaded files are stored on the `seoul-vibe-server-uploads` ReadWriteMany PVC. The base assumes an EFS CSI-style storage class named `efs-sc`; patch `k8s/base/server-uploads-pvc.yaml` from the Terraform/deployment layer if the cluster uses a different storage class. For higher scale, replace local upload storage with S3/CDN-backed object URLs.
-- The base ingress is HTTP-only because this Terraform baseline does not create ACM certificates or DNS records. Add `alb.ingress.kubernetes.io/certificate-arn`, HTTPS listener ports, and redirect annotations in an environment overlay only after ACM/DNS are available.
+- Uploaded files are stored on the `seoul-vibe-server-uploads` ReadWriteMany PVC. The AWS overlays inject an EFS CSI-style storage class named `efs-sc`; patch the selected AWS overlay if the cluster uses a different storage class. For higher scale, replace local upload storage with S3/CDN-backed object URLs.
+- The base ingress is HTTP-only and cloud-neutral because this Terraform baseline does not create ACM certificates or DNS records. The AWS overlays inject ALB annotations and `ingressClassName: alb`; add `alb.ingress.kubernetes.io/certificate-arn`, HTTPS listener ports, and redirect annotations in an environment overlay only after ACM/DNS are available.

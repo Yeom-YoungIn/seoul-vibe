@@ -1,19 +1,20 @@
-# 목적 - dev 환경에서 k8s/base를 환경별 값으로 패치하기 위해 추가됨
+# 목적 - AWS dev 환경에서 k8s/base를 환경별 값으로 패치하기 위해 추가됨
 # 설명 - Terraform dev ECR 출력값, dev host, dev CORS origin을 한 overlay에서 관리해 base manifest를 직접 수정하지 않게 한다.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base
+  - ../../../base
 
 patches:
   - path: ingress-patch.yaml
   - path: server-configmap-patch.yaml
+  - path: server-uploads-pvc-patch.yaml
 
 images:
-  - name: 000000000000.dkr.ecr.ap-northeast-2.amazonaws.com/seoul-vibe-client
+  - name: seoul-vibe-client
     newName: 000000000000.dkr.ecr.ap-northeast-2.amazonaws.com/seoul-vibe-dev-client
     newTag: sha-placeholder
-  - name: 000000000000.dkr.ecr.ap-northeast-2.amazonaws.com/seoul-vibe-server
+  - name: seoul-vibe-server
     newName: 000000000000.dkr.ecr.ap-northeast-2.amazonaws.com/seoul-vibe-dev-server
     newTag: sha-placeholder

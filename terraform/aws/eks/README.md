@@ -13,7 +13,7 @@ It creates:
 - EKS cluster, managed node group, and core EKS add-ons
 - IAM roles for the cluster, nodes, AWS Load Balancer Controller, and EFS CSI driver
 - AWS Load Balancer Controller Helm release prerequisites
-- EFS file system and Kubernetes `efs-sc` StorageClass for uploaded files
+- EFS file system and Kubernetes `efs-sc` StorageClass for uploaded files, consumed by the AWS Kubernetes overlays
 - Application namespace and an optional `seoul-vibe-server-env` Secret injection path
 
 ## Layout
@@ -46,7 +46,7 @@ After `terraform apply`, configure `kubectl`:
 terraform output -raw configure_kubeconfig_command
 ```
 
-Use `terraform output ecr_repository_urls` to replace the image placeholders in `k8s/overlays/dev/kustomization.yaml` or `k8s/overlays/prod/kustomization.yaml`:
+Use `terraform output ecr_repository_urls` to replace the image placeholders in `k8s/overlays/aws/dev/kustomization.yaml` or `k8s/overlays/prod/kustomization.yaml`:
 
 ```yaml
 images:
@@ -62,14 +62,14 @@ The base manifest expects:
 
 - namespace: `seoul-vibe` by default, created by Terraform as `var.app_namespace`
 - server secret: `seoul-vibe-server-env`
-- upload storage class: `efs-sc`
-- ingress class: handled by AWS Load Balancer Controller
+- upload storage class: `efs-sc`, injected by the selected AWS overlay
+- ingress class: `alb`, injected by the selected AWS overlay and handled by AWS Load Balancer Controller
 
 Render the selected environment before applying:
 
 ```bash
-kubectl kustomize ../../../k8s/overlays/dev
-kubectl apply -k ../../../k8s/overlays/dev
+kubectl kustomize ../../../k8s/overlays/aws/dev
+kubectl apply -k ../../../k8s/overlays/aws/dev
 ```
 
 ## Secret Strategy

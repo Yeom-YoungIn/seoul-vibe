@@ -48,12 +48,13 @@ npm install
 
 - Application container definitions live in `Dockerfile.client` and `Dockerfile.server`.
 - Kubernetes base manifests live in `k8s/base`.
-- Environment overlays live in `k8s/overlays/dev` and `k8s/overlays/prod`.
+- The main dev overlay for GCP lives in `k8s/overlays/gcp/dev`; the AWS dev overlay lives in `k8s/overlays/aws/dev`.
+- The current production overlay remains in `k8s/overlays/prod` until production is split by cloud provider.
 - Terraform/IaC root modules live under `terraform` by cloud:
   - AWS EKS: `terraform/aws/eks`
   - GCP GKE: `terraform/gcp/gke`
 - The AWS EKS module provides EKS, ECR, node groups, IAM/IRSA, AWS Load Balancer Controller prerequisites, EFS-backed `efs-sc`, namespace setup, and an optional Secret injection path.
-- The GCP GKE module currently provides provider/backend/env structure for a future GKE baseline.
+- The GCP GKE module currently provides provider/backend/env structure and Artifact Registry repositories for the dev container images.
 - Deployment details and required secret keys are documented in `docs/deployment/eks.md`.
 
 ## Lint
