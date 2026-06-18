@@ -5,8 +5,16 @@ gcp_project_id = "CHANGE_ME"
 gcp_region     = "asia-northeast3"
 
 # Example production shape. Adjust after traffic, HA, and cost requirements are fixed.
-gke_node_locations     = ["asia-northeast3-a", "asia-northeast3-b"]
-gke_node_count         = 1
-gke_node_machine_type  = "e2-standard-2"
-gke_node_disk_type     = "pd-balanced"
+gke_node_locations       = ["asia-northeast3-a", "asia-northeast3-b"]
+gke_node_count           = 1
+gke_node_machine_type    = "e2-standard-2"
+gke_node_disk_type       = "pd-balanced"
 gke_deletion_protection = true
+
+# Example production PostgreSQL shape. Confirm sizing, HA, and backup policy before applying.
+cloud_sql_tier                = "db-custom-1-3840"
+cloud_sql_disk_type           = "PD_SSD"
+cloud_sql_disk_size_gb        = 50
+cloud_sql_availability_type   = "REGIONAL"
+cloud_sql_backup_enabled      = true
+cloud_sql_deletion_protection = true

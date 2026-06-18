@@ -25,3 +25,21 @@ resource "google_compute_subnetwork" "gke" {
     ip_cidr_range = var.gke_services_ipv4_cidr_range
   }
 }
+
+resource "google_compute_global_address" "private_service_access" {
+  name          = "${local.name_prefix}-private-service-access"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = var.private_service_access_ipv4_prefix_length
+  network       = google_compute_network.gke.id
+
+  depends_on = [
+    google_project_service.required,
+  ]
+}
+
+resource "google_service_networking_connection" "private_service_access" {
+  network                 = google_compute_network.gke.id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_service_access.name]
+}

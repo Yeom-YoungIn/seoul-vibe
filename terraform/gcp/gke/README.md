@@ -15,6 +15,7 @@ It is intentionally separate from `terraform/aws/eks` so AWS and GCP can use dif
 - GKE cluster and node pools
 - Node service account with Artifact Registry pull, logging, and monitoring permissions
 - Workload Identity enabled on the cluster
+- Cloud SQL PostgreSQL with private IP, application database, and generated application user password
 - Storage strategy for uploads, such as GCS-backed application storage or Filestore/CSI
 
 ## Layout
@@ -53,10 +54,20 @@ kubectl get nodes
 kubectl kustomize ../../../k8s/overlays/gcp/dev
 ```
 
+Cloud SQL connection values for the Kubernetes Secret:
+
+```bash
+terraform output -raw cloud_sql_private_ip_address
+terraform output -raw cloud_sql_database_name
+terraform output -raw cloud_sql_app_user_name
+terraform output -raw cloud_sql_app_user_password
+```
+
 ## Notes
 
 - `backend.hcl` uses a GCS backend and requires a pre-created GCS bucket.
 - `gcp_project_id` must point to the target project.
 - Dev defaults create one `e2-medium` node in `asia-northeast3-a` with `pd-standard` boot disks to avoid small-project SSD quota failures. Override `gke_node_locations`, `gke_node_count`, `gke_node_machine_type`, or `gke_node_disk_type` in the environment tfvars when needed.
-- This module creates the cluster, but application secrets and the GCP upload-storage strategy are still deployment decisions before `kubectl apply -k k8s/overlays/gcp/dev`.
+- Cloud SQL uses private IP through private service access. Use `cloud_sql_private_ip_address` as `DB_HOST` in the `seoul-vibe-server-env` Kubernetes Secret.
+- This module creates the cluster and database, but application secrets and the GCP upload-storage strategy are still deployment decisions before `kubectl apply -k k8s/overlays/gcp/dev`.
 - Keep real `terraform.tfvars`, backend config, state, and plan files out of Git.

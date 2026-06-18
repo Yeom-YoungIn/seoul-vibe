@@ -6,6 +6,8 @@ locals {
     "compute.googleapis.com",
     "container.googleapis.com",
     "iam.googleapis.com",
+    "servicenetworking.googleapis.com",
+    "sqladmin.googleapis.com",
   ])
 }
 

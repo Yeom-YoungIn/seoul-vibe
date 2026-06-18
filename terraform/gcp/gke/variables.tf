@@ -112,3 +112,83 @@ variable "gke_services_ipv4_cidr_range" {
   type        = string
   default     = "10.30.0.0/20"
 }
+
+variable "private_service_access_ipv4_prefix_length" {
+  description = "Prefix length for the reserved private service access range used by Cloud SQL private IP."
+  type        = number
+  default     = 16
+
+  validation {
+    condition     = var.private_service_access_ipv4_prefix_length >= 16 && var.private_service_access_ipv4_prefix_length <= 24
+    error_message = "private_service_access_ipv4_prefix_length must be between 16 and 24."
+  }
+}
+
+variable "cloud_sql_database_version" {
+  description = "Cloud SQL PostgreSQL database version."
+  type        = string
+  default     = "POSTGRES_16"
+}
+
+variable "cloud_sql_tier" {
+  description = "Cloud SQL machine tier. db-f1-micro is a low-cost dev default."
+  type        = string
+  default     = "db-f1-micro"
+}
+
+variable "cloud_sql_disk_type" {
+  description = "Cloud SQL disk type."
+  type        = string
+  default     = "PD_HDD"
+
+  validation {
+    condition     = contains(["PD_HDD", "PD_SSD"], var.cloud_sql_disk_type)
+    error_message = "cloud_sql_disk_type must be PD_HDD or PD_SSD."
+  }
+}
+
+variable "cloud_sql_disk_size_gb" {
+  description = "Cloud SQL disk size in GB."
+  type        = number
+  default     = 10
+
+  validation {
+    condition     = var.cloud_sql_disk_size_gb >= 10
+    error_message = "cloud_sql_disk_size_gb must be at least 10."
+  }
+}
+
+variable "cloud_sql_availability_type" {
+  description = "Cloud SQL availability type."
+  type        = string
+  default     = "ZONAL"
+
+  validation {
+    condition     = contains(["ZONAL", "REGIONAL"], var.cloud_sql_availability_type)
+    error_message = "cloud_sql_availability_type must be ZONAL or REGIONAL."
+  }
+}
+
+variable "cloud_sql_backup_enabled" {
+  description = "Whether Cloud SQL automated backups are enabled."
+  type        = bool
+  default     = true
+}
+
+variable "cloud_sql_deletion_protection" {
+  description = "Whether deletion protection is enabled for the Cloud SQL instance."
+  type        = bool
+  default     = false
+}
+
+variable "cloud_sql_database_name" {
+  description = "Application database name."
+  type        = string
+  default     = "seoul_vibe"
+}
+
+variable "cloud_sql_app_user_name" {
+  description = "Application database user name."
+  type        = string
+  default     = "seoul_vibe_app"
+}

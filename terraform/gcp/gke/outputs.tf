@@ -50,3 +50,29 @@ output "configure_kubeconfig_command" {
   description = "Command that configures kubectl to use this GKE cluster."
   value       = "gcloud container clusters get-credentials ${google_container_cluster.primary.name} --region ${google_container_cluster.primary.location} --project ${var.gcp_project_id}"
 }
+
+output "cloud_sql_instance_name" {
+  description = "Cloud SQL PostgreSQL instance name."
+  value       = google_sql_database_instance.postgres.name
+}
+
+output "cloud_sql_private_ip_address" {
+  description = "Private IP address for the Cloud SQL PostgreSQL instance."
+  value       = google_sql_database_instance.postgres.private_ip_address
+}
+
+output "cloud_sql_database_name" {
+  description = "Application database name."
+  value       = google_sql_database.app.name
+}
+
+output "cloud_sql_app_user_name" {
+  description = "Application database user name."
+  value       = google_sql_user.app.name
+}
+
+output "cloud_sql_app_user_password" {
+  description = "Generated application database user password. Store it in Kubernetes Secret, not in Git."
+  value       = random_password.cloud_sql_app_user.result
+  sensitive   = true
+}
