@@ -9,6 +9,8 @@ resources:
 patches:
   - path: ingress-patch.yaml
   - path: server-configmap-patch.yaml
+  - path: server-deployment-patch.yaml
+  - path: server-uploads-pvc-patch.yaml
 
 images:
   - name: seoul-vibe-client
