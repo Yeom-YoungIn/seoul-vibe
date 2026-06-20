@@ -130,6 +130,17 @@ variable "cloud_sql_database_version" {
   default     = "POSTGRES_16"
 }
 
+variable "cloud_sql_edition" {
+  description = "Cloud SQL edition. ENTERPRISE supports low-cost shared-core tiers such as db-f1-micro."
+  type        = string
+  default     = "ENTERPRISE"
+
+  validation {
+    condition     = contains(["ENTERPRISE", "ENTERPRISE_PLUS"], var.cloud_sql_edition)
+    error_message = "cloud_sql_edition must be ENTERPRISE or ENTERPRISE_PLUS."
+  }
+}
+
 variable "cloud_sql_tier" {
   description = "Cloud SQL machine tier. db-f1-micro is a low-cost dev default."
   type        = string

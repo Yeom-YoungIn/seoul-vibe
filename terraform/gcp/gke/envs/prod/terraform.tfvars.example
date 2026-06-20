@@ -12,6 +12,7 @@ gke_node_disk_type       = "pd-balanced"
 gke_deletion_protection = true
 
 # Example production PostgreSQL shape. Confirm sizing, HA, and backup policy before applying.
+cloud_sql_edition             = "ENTERPRISE"
 cloud_sql_tier                = "db-custom-1-3840"
 cloud_sql_disk_type           = "PD_SSD"
 cloud_sql_disk_size_gb        = 50
