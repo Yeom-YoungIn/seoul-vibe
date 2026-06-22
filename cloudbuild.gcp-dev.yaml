@@ -1,0 +1,27 @@
+# 목적 - 로컬 Docker 없이 GCP dev 배포 이미지를 빌드/push하기 위해 추가됨
+# 설명 - Cloud Build의 amd64 환경에서 client/server 이미지를 Artifact Registry로 올린다.
+substitutions:
+  _CLIENT_IMAGE: asia-northeast3-docker.pkg.dev/seoul-vibe/seoul-vibe-dev-client/client:dev
+  _SERVER_IMAGE: asia-northeast3-docker.pkg.dev/seoul-vibe/seoul-vibe-dev-server/server:dev
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - Dockerfile.client
+      - -t
+      - ${_CLIENT_IMAGE}
+      - .
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - Dockerfile.server
+      - -t
+      - ${_SERVER_IMAGE}
+      - .
+
+images:
+  - ${_CLIENT_IMAGE}
+  - ${_SERVER_IMAGE}

@@ -8,6 +8,7 @@ resources:
 
 patches:
   - path: ingress-patch.yaml
+  - path: client-deployment-patch.yaml
   - path: server-configmap-patch.yaml
   - path: server-deployment-patch.yaml
   - path: server-uploads-pvc-patch.yaml
@@ -15,7 +16,7 @@ patches:
 images:
   - name: seoul-vibe-client
     newName: asia-northeast3-docker.pkg.dev/seoul-vibe/seoul-vibe-dev-client/client
-    newTag: 0b4b71b
+    newTag: ff9ecc6
   - name: seoul-vibe-server
     newName: asia-northeast3-docker.pkg.dev/seoul-vibe/seoul-vibe-dev-server/server
-    newTag: 0b4b71b
+    newTag: ff9ecc6

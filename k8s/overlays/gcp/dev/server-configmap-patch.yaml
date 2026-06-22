@@ -5,4 +5,5 @@ kind: ConfigMap
 metadata:
   name: seoul-vibe-server-config
 data:
+  TYPEORM_SYNC: "true"
   CORS_ORIGIN: http://dev.seoul-vibe.example.com
