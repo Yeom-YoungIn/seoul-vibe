@@ -73,6 +73,8 @@ terraform output -raw cloud_sql_app_user_password
 ./scripts/gcp-dev-up.sh
 ```
 
+세 스크립트는 실행 전에 대상 GCP project/region/GKE cluster/node pool/Cloud SQL을 조회하고, `kubectl`로 리소스를 변경하기 전 현재 kube context가 대상 GKE API server와 일치하는지 확인한다.
+
 `gcp-dev-down.sh`는 다음 순서로 실행된다.
 
 1. Kubernetes Ingress를 삭제해 외부 Load Balancer를 제거한다.
@@ -84,6 +86,9 @@ terraform output -raw cloud_sql_app_user_password
 
 주의할 점:
 
+- 실제 변경 없이 대상과 실행 계획만 확인하려면 `./scripts/gcp-dev-down.sh --dry-run` 또는 `./scripts/gcp-dev-up.sh --dry-run`을 먼저 실행한다.
+- `CLUSTER_NAME`, `NODE_POOL`, `SQL_INSTANCE`가 `dev`를 포함하지 않으면 실행을 중단한다. 의도적으로 다른 이름을 쓰는 개발 리소스라면 `--allow-non-dev-target`를 붙인다.
+- kube context 이름/API server가 대상 GKE와 맞지 않으면 `kubectl` 작업을 중단한다. 비표준 kubeconfig를 검증한 뒤에만 `--allow-context-mismatch`를 사용한다.
 - Persistent Disk, Cloud SQL storage, Artifact Registry image storage, GCS backend 같은 저장 데이터는 유지된다.
 - Ingress를 삭제했다가 다시 만들면 외부 IP가 바뀔 수 있다. `gcp-dev-up.sh`는 기본적으로 `/etc/hosts`를 갱신하므로 실행 중 Mac 로그인 비밀번호를 물어볼 수 있다.
 - `/etc/hosts` 갱신을 건너뛰려면 `UPDATE_HOSTS=false ./scripts/gcp-dev-up.sh`로 실행한다.
