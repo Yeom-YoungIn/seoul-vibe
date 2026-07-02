@@ -1,63 +1,24 @@
-<!--
-목적 - 현재 레포의 애플리케이션, Kubernetes base, Terraform IaC 진입점을 한눈에 안내하기 위해 수정됨
-설명 - 프론트엔드/백엔드 실행 방법과 함께 EKS/GKE 배포에 필요한 Docker, k8s/base, terraform/ 위치를 README에서 연결한다.
--->
-# Seoul Vibe Monorepo
+# Seoul Vibe
 
-React frontend and NestJS backend in a single npm workspace.
+## 프로젝트 개요
 
-## Structure
+Seoul Vibe는 서울의 로컬 장소를 소개하는 콘텐츠와 사용자 피드를 함께 제공하는 지역 기반 서비스입니다. 운영자는 글 형태의 추천 콘텐츠를 발행하고, 사용자는 식당·카페·기타 장소에 대한 짧은 후기와 이미지, 위치 정보를 직접 공유할 수 있습니다.
 
-- packages/client — React + Vite app
-- packages/server — NestJS API
-  - libs/common — Nest CLI 라이브러리 모듈(`nest g library libs` 후 common으로 rename), 공통 로직/유틸 배치 위치
-    - orm — TypeORM 설정/모듈 위치
+이 프로젝트는 서울의 장소 정보를 한쪽에서는 큐레이션된 글로, 다른 한쪽에서는 커뮤니티 피드로 보여주도록 구성되어 있습니다. 처음 서울을 접하는 사용자나 새로운 장소를 찾는 사용자에게는 정리된 탐색 경험을 제공하고, 직접 경험을 남기고 싶은 사용자에게는 간단한 공유 수단을 제공합니다.
 
-## Getting started
+코드 기준으로는 회원가입·로그인, 이메일 인증, 게시글 작성, 위치 선택 지도, 관리자용 콘텐츠/게시글 관리 기능이 포함되어 있습니다. 또한 콘텐츠 번역 구조가 있어 단일 언어 블로그보다 확장 가능한 형태로 설계되어 있습니다.
 
-1. Install dependencies from the repo root:
+## 기술 스택
 
-```bash
-npm install
-```
+- Frontend: React, TypeScript, Vite, React Router, Leaflet
+- Backend: NestJS, TypeScript
+- Database: PostgreSQL, TypeORM
+- Infra: Docker, Docker Compose, Nginx, Kubernetes, Terraform, AWS EKS, GCP GKE
+- Test: Jest, Supertest
 
-2. 환경 변수 파일(.env.local / .env.develope / .env.production)에서 DB 설정을 관리합니다.
-   - 기본 키: DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME, TYPEORM_SYNC, PORT
-   - NODE_ENV=production → .env.production, NODE_ENV=develope → .env.develope, 그 외 → .env.local 로 로드
-3. Run the apps
+## 참고 링크
 
-- Client: `npm run dev:client`
-- Server: `npm run dev:server`
-
-## Server shared library
-
-- Nest CLI로 생성한 공통 모듈: `packages/server/libs/common`
-- 앱 코드에서 `import { CommonOrmModule } from '@app/common';` 등 경로 별칭(@app/common)으로 사용
-- ORM 설정: `packages/server/libs/common/src/orm`
-  - 환경 변수 기반 TypeORM 설정 헬퍼 `buildTypeOrmConfig`
-  - DB 연결 모듈 `CommonOrmModule` (`CommonOrmModule.forRoot()`로 호출). `DB_HOST` 혹은 `DATABASE_URL`/`TYPEORM_URL`이 설정돼 있을 때만 연결 생성.
-
-## Build
-
-- Client: `npm run build:client`
-- Server: `npm run build:server` (Nest CLI + webpack)
-- Client container: `npm run docker:build:client`
-- Server container: `npm run docker:build:server`
-
-## Cloud deployment
-
-- Application container definitions live in `Dockerfile.client` and `Dockerfile.server`.
-- Kubernetes base manifests live in `k8s/base`.
-- The main dev overlay for GCP lives in `k8s/overlays/gcp/dev`; the AWS dev overlay lives in `k8s/overlays/aws/dev`.
-- The current production overlay remains in `k8s/overlays/prod` until production is split by cloud provider.
-- Terraform/IaC root modules live under `terraform` by cloud:
-  - AWS EKS: `terraform/aws/eks`
-  - GCP GKE: `terraform/gcp/gke`
-- The AWS EKS module provides EKS, ECR, node groups, IAM/IRSA, AWS Load Balancer Controller prerequisites, EFS-backed `efs-sc`, namespace setup, and an optional Secret injection path.
-- The GCP GKE module currently provides provider/backend/env structure and Artifact Registry repositories for the dev container images.
-- Deployment details and required secret keys are documented in `docs/deployment/eks.md`.
-
-## Lint
-
-- Client: `npm run lint:client`
-- Server: `npm run lint:server`
+- [클라이언트 앱](./packages/client)
+- [서버 앱](./packages/server)
+- [AWS EKS Terraform](./terraform/aws/eks/README.md)
+- [GCP GKE Terraform](./terraform/gcp/gke/README.md)
