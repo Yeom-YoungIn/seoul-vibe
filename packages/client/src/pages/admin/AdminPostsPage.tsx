@@ -125,9 +125,9 @@ export default function AdminPostsPage() {
       )}
 
       <div className="pagination">
-        <button className="btn btn-ghost btn-sm" disabled={skip === 0} onClick={() => setSkip((s) => s - PAGE_SIZE)}>← Prev</button>
+        <button className="btn btn-ghost btn-sm" disabled={skip === 0} onClick={() => setSkip((s) => s - PAGE_SIZE)}>Prev</button>
         <span className="pagination-info">{skip + 1}–{Math.min(skip + PAGE_SIZE, count)} of {count}</span>
-        <button className="btn btn-ghost btn-sm" disabled={skip + PAGE_SIZE >= count} onClick={() => setSkip((s) => s + PAGE_SIZE)}>Next →</button>
+        <button className="btn btn-ghost btn-sm" disabled={skip + PAGE_SIZE >= count} onClick={() => setSkip((s) => s + PAGE_SIZE)}>Next</button>
       </div>
     </div>
   );

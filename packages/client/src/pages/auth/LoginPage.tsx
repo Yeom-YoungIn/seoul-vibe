@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/axios';
 import { useAuth } from '../../hooks/useAuth';
 import { getApiErrorMessage } from '../../lib/api/error';
+import AuthShell from '../../components/layouts/AuthShell';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -34,45 +35,46 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h1 className="auth-title">Seoul Vibe</h1>
-        <h2>Welcome back</h2>
-        <form onSubmit={handleSubmit} className="auth-form">
-          <label>
-            Email
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="you@example.com"
-              required
-            />
-          </label>
-          <label>
-            Password
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Password"
-              required
-            />
-          </label>
-          {error && <p className="auth-error">{error}</p>}
-          <button type="submit" disabled={loading} className="auth-button">
-            {loading ? 'Logging in…' : 'Log in'}
-          </button>
-        </form>
-        <p className="auth-footer">
-          No account?{' '}
-          <Link to="/auth/signup" className="auth-link">
-            Sign up
-          </Link>
-        </p>
-      </div>
-    </div>
+    <AuthShell>
+      <h1 className="auth-heading">Welcome back</h1>
+      <form onSubmit={handleSubmit} className="auth-form">
+        <label>
+          Email
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="you@example.com"
+            required
+          />
+        </label>
+        <label>
+          Password
+          <input
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="Password"
+            required
+          />
+        </label>
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+        <button type="submit" disabled={loading} className="btn btn-primary auth-button">
+          {loading ? 'Logging in…' : 'Log in'}
+        </button>
+      </form>
+      <p className="auth-footer">
+        No account?{' '}
+        <Link to="/auth/signup" className="auth-link">
+          Sign up
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

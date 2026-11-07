@@ -219,7 +219,7 @@ export default function AdminArticlesPage() {
           disabled={skip === 0}
           onClick={() => setSkip((s) => s - PAGE_SIZE)}
         >
-          ← Prev
+          Prev
         </button>
         <span className="pagination-info">
           {skip + 1}–{Math.min(skip + PAGE_SIZE, count)} of {count}
@@ -229,7 +229,7 @@ export default function AdminArticlesPage() {
           disabled={skip + PAGE_SIZE >= count}
           onClick={() => setSkip((s) => s + PAGE_SIZE)}
         >
-          Next →
+          Next
         </button>
       </div>
 
@@ -273,7 +273,7 @@ export default function AdminArticlesPage() {
                           className="btn btn-ghost btn-sm"
                           onClick={() => removeTranslation(i)}
                         >
-                          ✕
+                          Remove
                         </button>
                       )}
                     </div>

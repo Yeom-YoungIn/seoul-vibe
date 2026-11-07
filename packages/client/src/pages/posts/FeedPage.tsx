@@ -1,24 +1,29 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { postsApi, Post, PostCategory } from '../../lib/api/posts';
+import { useAuth } from '../../hooks/useAuth';
+import { useHeaderTone } from '../../hooks/useHeaderTone';
 import Spinner from '../../components/ui/Spinner';
+import PostCard from '../../components/ui/PostCard';
 
 const PAGE_SIZE = 20;
 
 const CATEGORIES: { value: PostCategory | ''; label: string }[] = [
   { value: '', label: 'All' },
-  { value: 'restaurant', label: '🍜 Restaurant' },
-  { value: 'cafe', label: '☕ Café' },
-  { value: 'etc', label: '📍 Other' },
+  { value: 'restaurant', label: 'Restaurant' },
+  { value: 'cafe', label: 'Café' },
+  { value: 'etc', label: 'Other' },
 ];
 
 export default function FeedPage() {
+  const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState<PostCategory | ''>('');
   const skipRef = useRef(0);
   const loadingRef = useRef(false);
+  useHeaderTone('light');
 
   const loadMore = useCallback(
     (reset = false) => {
@@ -47,65 +52,56 @@ export default function FeedPage() {
   }, [category, loadMore]);
 
   return (
-    <div className="page">
-      <section className="page-header">
-        <h1>Community Feed</h1>
-        <p>See what people are discovering in Seoul.</p>
-      </section>
-
-      {/* Category filter */}
-      <div className="filter-bar">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c.value}
-            className={`filter-chip ${category === c.value ? 'active' : ''}`}
-            onClick={() => setCategory(c.value as PostCategory | '')}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Feed */}
-      <div className="feed">
-        {posts.map((post) => (
-          <Link key={post.id} to={`/posts/${post.id}`} className="feed-card">
-            {post.images.length > 0 && (
-              <img src={post.images[0]} alt="" className="feed-card-img" />
-            )}
-            <div className="feed-card-body">
-              <div className="feed-card-meta">
-                <span className="feed-card-author">@{post.author.nickname}</span>
-                <span className="feed-card-category">{post.category}</span>
-              </div>
-              <p className="feed-card-content">{post.content}</p>
-              {post.locationName && (
-                <span className="feed-card-location">📍 {post.locationName}</span>
-              )}
-              <span className="feed-card-date">
-                {new Date(post.createdAt).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </span>
-            </div>
+    <section className="split">
+      <aside className="split-side">
+        <div className="panel surface-ink">
+          <h1 className="panel-title">Community Feed</h1>
+          <p className="panel-desc">See what people are discovering in Seoul.</p>
+          <div className="filter-list" role="group" aria-label="Filter by category">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c.value}
+                type="button"
+                className={category === c.value ? 'active' : ''}
+                aria-pressed={category === c.value}
+                onClick={() => setCategory(c.value)}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <Link to={user ? '/posts/new' : '/auth/login'} className="btn btn-lime">
+            Share a spot
           </Link>
-        ))}
-      </div>
-
-      {loading && <Spinner />}
-
-      {!loading && posts.length === 0 && (
-        <p className="empty-state">No posts yet. Be the first to share a spot!</p>
-      )}
-
-      {!loading && hasMore && (
-        <div className="load-more">
-          <button className="btn btn-ghost" onClick={() => loadMore()}>
-            Load more
-          </button>
         </div>
-      )}
-    </div>
+      </aside>
+
+      <div className="split-main surface-paper">
+        {posts.length > 0 && (
+          <div className="stagger">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+        )}
+
+        {loading && <Spinner />}
+
+        {!loading && posts.length === 0 && (
+          <div className="empty-block">
+            <h2>No posts yet.</h2>
+            <p>Be the first to share a spot.</p>
+          </div>
+        )}
+
+        {!loading && hasMore && posts.length > 0 && (
+          <div className="load-more">
+            <button type="button" className="btn btn-primary" onClick={() => loadMore()}>
+              Load more
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { articlesApi, ArticleListItem } from '../../lib/api/articles';
+import { formatDate } from '../../lib/format';
 import Spinner from '../../components/ui/Spinner';
+import { ArrowIcon } from '../../components/ui/Icon';
 import { useLanguage } from '../../hooks/useLanguage';
+import { useHeaderTone } from '../../hooks/useHeaderTone';
 
 const PAGE_SIZE = 12;
 
@@ -12,6 +15,7 @@ export default function ArticleListPage() {
   const [count, setCount] = useState(0);
   const [skip, setSkip] = useState(0);
   const [loading, setLoading] = useState(true);
+  useHeaderTone('dark');
 
   useEffect(() => {
     setLoading(true);
@@ -25,56 +29,59 @@ export default function ArticleListPage() {
   }, [skip, language]);
 
   return (
-    <div className="page">
-      <section className="page-header">
-        <h1>Seoul Vibes</h1>
-        <p>Curated guides to Seoul&apos;s most interesting places.</p>
-      </section>
+    <section className="split">
+      <aside className="split-side">
+        <div className="panel surface-lime">
+          <h1 className="panel-title">Seoul Vibes</h1>
+          <p className="panel-desc">Curated guides to Seoul&apos;s most interesting places.</p>
+          {count > PAGE_SIZE && (
+            <div className="pagination">
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                disabled={skip === 0}
+                onClick={() => setSkip((s) => Math.max(0, s - PAGE_SIZE))}
+              >
+                Prev
+              </button>
+              <span className="pagination-info">
+                {skip + 1}–{Math.min(skip + PAGE_SIZE, count)} / {count}
+              </span>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                disabled={skip + PAGE_SIZE >= count}
+                onClick={() => setSkip((s) => s + PAGE_SIZE)}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+      </aside>
 
-      {loading ? (
-        <Spinner />
-      ) : articles.length === 0 ? (
-        <p className="empty-state">No articles yet. Check back soon!</p>
-      ) : (
-        <>
-          <div className="card-grid">
+      <div className="split-main surface-paper">
+        {loading ? (
+          <Spinner />
+        ) : articles.length === 0 ? (
+          <div className="empty-block">
+            <h2>No guides yet.</h2>
+            <p>Check back soon.</p>
+          </div>
+        ) : (
+          <ol className="article-rows">
             {articles.map((a) => (
-              <Link key={a.id} to={`/articles/${a.slug}`} className="article-card">
-                <div className="article-card-body">
-                  <h3>{a.title}</h3>
-                  <span className="article-card-date">
-                    {new Date(a.createdAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </span>
-                </div>
-              </Link>
+              <li key={a.id}>
+                <Link to={`/articles/${a.slug}`} className="article-row">
+                  <time>{formatDate(a.createdAt)}</time>
+                  <h2>{a.title}</h2>
+                  <ArrowIcon size={28} />
+                </Link>
+              </li>
             ))}
-          </div>
-
-          <div className="pagination">
-            <button
-              className="btn btn-ghost btn-sm"
-              disabled={skip === 0}
-              onClick={() => setSkip((s) => Math.max(0, s - PAGE_SIZE))}
-            >
-              ← Prev
-            </button>
-            <span className="pagination-info">
-              {skip + 1}–{Math.min(skip + PAGE_SIZE, count)} of {count}
-            </span>
-            <button
-              className="btn btn-ghost btn-sm"
-              disabled={skip + PAGE_SIZE >= count}
-              onClick={() => setSkip((s) => s + PAGE_SIZE)}
-            >
-              Next →
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+          </ol>
+        )}
+      </div>
+    </section>
   );
 }

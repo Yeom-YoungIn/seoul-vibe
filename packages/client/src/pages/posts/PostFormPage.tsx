@@ -3,13 +3,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { postsApi, PostCategory, CreatePostPayload } from '../../lib/api/posts';
 import { uploadApi } from '../../lib/api/upload';
 import { getApiErrorMessage } from '../../lib/api/error';
+import { useHeaderTone } from '../../hooks/useHeaderTone';
+import { CloseIcon } from '../../components/ui/Icon';
 
 const LocationPicker = lazy(() => import('../../components/ui/LocationPicker'));
 
 const CATEGORIES: { value: PostCategory; label: string }[] = [
-  { value: 'restaurant', label: '🍜 Restaurant' },
-  { value: 'cafe', label: '☕ Café' },
-  { value: 'etc', label: '📍 Other' },
+  { value: 'restaurant', label: 'Restaurant' },
+  { value: 'cafe', label: 'Café' },
+  { value: 'etc', label: 'Other' },
 ];
 
 interface Props {
@@ -30,6 +32,7 @@ export default function PostFormPage({ mode }: Props) {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  useHeaderTone('dark');
 
   useEffect(() => {
     if (mode === 'edit' && id) {
@@ -86,131 +89,142 @@ export default function PostFormPage({ mode }: Props) {
   };
 
   return (
-    <div className="page page-narrow">
-      <h1>{mode === 'create' ? 'Share a spot' : 'Edit post'}</h1>
+    <section className="split">
+      <aside className="split-side">
+        <div className="panel surface-lime">
+          <h1 className="panel-title">{mode === 'create' ? 'Share a spot' : 'Edit post'}</h1>
+          <p className="panel-desc">
+            A few honest lines, a photo or two, and a pin on the map are all it takes.
+          </p>
+        </div>
+      </aside>
 
-      <form onSubmit={handleSubmit} className="post-form">
-        <label className="form-label">
-          What did you find?
-          <textarea
-            className="form-textarea"
-            value={form.content}
-            onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-            placeholder="Tell the community about this place..."
-            rows={5}
-            required
-            minLength={1}
-            maxLength={2000}
-          />
-        </label>
+      <div className="split-main surface-paper">
+        <form onSubmit={handleSubmit} className="post-form">
+          <label className="form-label">
+            What did you find?
+            <textarea
+              className="form-textarea"
+              value={form.content}
+              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+              placeholder="Tell the community about this place..."
+              rows={5}
+              required
+              minLength={1}
+              maxLength={2000}
+            />
+          </label>
 
-        <label className="form-label">
-          Category
-          <select
-            className="form-select"
-            value={form.category}
-            onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as PostCategory }))}
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="form-label">
-          Location name
-          <input
-            className="form-input"
-            type="text"
-            value={form.locationName ?? ''}
-            onChange={(e) => setForm((f) => ({ ...f, locationName: e.target.value }))}
-            placeholder="e.g. Seongsu-dong café"
-            maxLength={255}
-          />
-        </label>
-
-        <div className="form-label">
-          Location on map <span className="upload-hint">(선택)</span>
-          <div style={{ marginTop: '0.35rem' }}>
-            <Suspense
-              fallback={<div style={{ height: 240, background: '#f1f5f9', borderRadius: 12 }} />}
+          <label className="form-label">
+            Category
+            <select
+              className="form-select"
+              value={form.category}
+              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as PostCategory }))}
             >
-              <LocationPicker
-                lat={form.locationLat}
-                lng={form.locationLng}
-                onChange={(lat, lng) =>
-                  setForm((f) => ({ ...f, locationLat: lat, locationLng: lng }))
-                }
-              />
-            </Suspense>
-            {form.locationLat && (
+              {CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="form-label">
+            Location name
+            <input
+              className="form-input"
+              type="text"
+              value={form.locationName ?? ''}
+              onChange={(e) => setForm((f) => ({ ...f, locationName: e.target.value }))}
+              placeholder="e.g. Seongsu-dong café"
+              maxLength={255}
+            />
+          </label>
+
+          <div className="form-label">
+            Location on map <span className="upload-hint">(선택)</span>
+            <div style={{ marginTop: '0.35rem' }}>
+              <Suspense fallback={<div className="map-placeholder" style={{ height: 240 }} />}>
+                <LocationPicker
+                  lat={form.locationLat}
+                  lng={form.locationLng}
+                  onChange={(lat, lng) =>
+                    setForm((f) => ({ ...f, locationLat: lat, locationLng: lng }))
+                  }
+                />
+              </Suspense>
+              {form.locationLat && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  style={{ marginTop: '0.5rem' }}
+                  onClick={() =>
+                    setForm((f) => ({ ...f, locationLat: undefined, locationLng: undefined }))
+                  }
+                >
+                  위치 초기화
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="form-label">
+            Photos
+            <div className="image-upload-area">
               <button
                 type="button"
                 className="btn btn-ghost btn-sm"
-                style={{ marginTop: '0.5rem' }}
-                onClick={() =>
-                  setForm((f) => ({ ...f, locationLat: undefined, locationLng: undefined }))
-                }
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
               >
-                위치 초기화
+                {uploading ? 'Uploading…' : 'Add photos'}
               </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                multiple
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+              />
+              <span className="upload-hint">JPG, PNG, GIF, WEBP · max 5 MB each</span>
+            </div>
+            {(form.images ?? []).length > 0 && (
+              <div className="image-preview-grid">
+                {(form.images ?? []).map((url, i) => (
+                  <div key={i} className="image-preview-item">
+                    <img src={url} alt="" className="image-preview-thumb" />
+                    <button
+                      type="button"
+                      className="image-preview-remove"
+                      onClick={() => removeImage(i)}
+                      aria-label="Remove photo"
+                    >
+                      <CloseIcon size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
-        </div>
 
-        <div className="form-label">
-          Photos
-          <div className="image-upload-area">
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-            >
-              {uploading ? 'Uploading…' : '+ Add photos'}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
-              multiple
-              style={{ display: 'none' }}
-              onChange={handleFileChange}
-            />
-            <span className="upload-hint">JPG, PNG, GIF, WEBP · max 5 MB each</span>
-          </div>
-          {(form.images ?? []).length > 0 && (
-            <div className="image-preview-grid">
-              {(form.images ?? []).map((url, i) => (
-                <div key={i} className="image-preview-item">
-                  <img src={url} alt="" className="image-preview-thumb" />
-                  <button
-                    type="button"
-                    className="image-preview-remove"
-                    onClick={() => removeImage(i)}
-                    title="Remove"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
+          {error && (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
           )}
-        </div>
 
-        {error && <p className="auth-error">{error}</p>}
-
-        <div className="form-actions">
-          <button type="button" className="btn btn-ghost" onClick={() => navigate(-1)}>
-            Cancel
-          </button>
-          <button type="submit" disabled={loading || uploading} className="btn btn-primary">
-            {loading ? 'Saving…' : mode === 'create' ? 'Post' : 'Save changes'}
-          </button>
-        </div>
-      </form>
-    </div>
+          <div className="form-actions">
+            <button type="button" className="btn btn-ghost" onClick={() => navigate(-1)}>
+              Cancel
+            </button>
+            <button type="submit" disabled={loading || uploading} className="btn btn-primary">
+              {loading ? 'Saving…' : mode === 'create' ? 'Post' : 'Save changes'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
   );
 }

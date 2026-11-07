@@ -2,10 +2,10 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 const NAV_ITEMS = [
-  { to: '/admin', label: '📊 Overview', end: true },
-  { to: '/admin/users', label: '👥 Users' },
-  { to: '/admin/articles', label: '📰 Articles' },
-  { to: '/admin/posts', label: '📝 Posts' },
+  { to: '/admin', label: 'Overview', end: true },
+  { to: '/admin/users', label: 'Users' },
+  { to: '/admin/articles', label: 'Articles' },
+  { to: '/admin/posts', label: 'Posts' },
 ];
 
 export default function AdminLayout() {
@@ -22,7 +22,7 @@ export default function AdminLayout() {
       <aside className="admin-sidebar">
         <div className="admin-sidebar-brand">
           <div className="admin-sidebar-logo">
-            <span>Seoul Vibe</span>
+            <span className="logo">seoul vibe</span>
             <span className="admin-badge">Admin</span>
           </div>
           <div className="admin-sidebar-meta">
@@ -36,9 +36,7 @@ export default function AdminLayout() {
               key={item.to}
               to={item.to}
               end={item.end}
-              className={({ isActive }) =>
-                `admin-nav-item ${isActive ? 'active' : ''}`
-              }
+              className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
             >
               {item.label}
             </NavLink>
@@ -49,7 +47,7 @@ export default function AdminLayout() {
             Logout
           </button>
           <NavLink to="/" className="btn btn-ghost btn-sm" target="_blank">
-            View site ↗
+            View site
           </NavLink>
         </div>
       </aside>

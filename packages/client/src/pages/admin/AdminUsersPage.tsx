@@ -68,7 +68,6 @@ export default function AdminUsersPage() {
     <div className="admin-page">
       <section className="admin-users-hero">
         <div>
-          <span className="admin-eyebrow">User management</span>
           <h1 className="admin-page-title">
             Users <span className="admin-count">{count}</span>
           </h1>
@@ -207,7 +206,7 @@ export default function AdminUsersPage() {
           disabled={skip === 0}
           onClick={() => setSkip((s) => s - PAGE_SIZE)}
         >
-          ← Prev
+          Prev
         </button>
         <span className="pagination-info">
           {skip + 1}–{Math.min(skip + PAGE_SIZE, count)} of {count}
@@ -217,7 +216,7 @@ export default function AdminUsersPage() {
           disabled={skip + PAGE_SIZE >= count}
           onClick={() => setSkip((s) => s + PAGE_SIZE)}
         >
-          Next →
+          Next
         </button>
       </div>
     </div>

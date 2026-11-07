@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/axios';
+import AuthShell from '../../components/layouts/AuthShell';
 
 type Status = 'loading' | 'success' | 'error';
 
@@ -21,26 +22,26 @@ export default function VerifyEmailPage() {
   }, [searchParams]);
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        {status === 'loading' && <p>Verifying your email…</p>}
-        {status === 'success' && (
-          <>
-            <h2>Email verified!</h2>
-            <p>Your account is now active. You can log in.</p>
-            <Link to="/auth/login" className="auth-button" style={{ display: 'inline-block', marginTop: 16 }}>
-              Go to login
-            </Link>
-          </>
-        )}
-        {status === 'error' && (
-          <>
-            <h2>Verification failed</h2>
-            <p>The link is invalid or has expired. Please sign up again.</p>
-            <Link to="/auth/signup" className="auth-link">Back to sign up</Link>
-          </>
-        )}
-      </div>
-    </div>
+    <AuthShell>
+      {status === 'loading' && <p>Verifying your email…</p>}
+      {status === 'success' && (
+        <>
+          <h1 className="auth-heading">Email verified!</h1>
+          <p>Your account is now active. You can log in.</p>
+          <Link to="/auth/login" className="btn btn-primary auth-button">
+            Go to login
+          </Link>
+        </>
+      )}
+      {status === 'error' && (
+        <>
+          <h1 className="auth-heading">Verification failed</h1>
+          <p>The link is invalid or has expired. Please sign up again.</p>
+          <Link to="/auth/signup" className="auth-link">
+            Back to sign up
+          </Link>
+        </>
+      )}
+    </AuthShell>
   );
 }

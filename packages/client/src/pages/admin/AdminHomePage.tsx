@@ -83,11 +83,10 @@ export default function AdminHomePage() {
     <div className="admin-page">
       <section className="admin-hero">
         <div className="admin-hero-copy">
-          <span className="admin-eyebrow">Control Center</span>
           <h1 className="admin-page-title">Operations overview</h1>
           <p className="admin-hero-text">
-            {user?.nickname ?? 'Admin'} is signed in. Use this workspace to manage
-            users, publish content, and moderate community activity.
+            {user?.nickname ?? 'Admin'} is signed in. Use this workspace to manage users, publish
+            content, and moderate community activity.
           </p>
         </div>
 
@@ -110,7 +109,7 @@ export default function AdminHomePage() {
             <span className="admin-stat-label">{card.label}</span>
             <span className="admin-stat-value">{stats === null ? '…' : card.value}</span>
             <span className="admin-stat-note">{card.note}</span>
-            <span className="admin-stat-link">Open section →</span>
+            <span className="admin-stat-link">Open section</span>
           </Link>
         ))}
       </div>

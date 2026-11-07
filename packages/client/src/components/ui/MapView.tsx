@@ -29,7 +29,7 @@ function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
 
 export default function MapView({ lat, lng, label, zoom = 15, height = '280px' }: Props) {
   return (
-    <div style={{ height, borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+    <div className="map-frame" style={{ height }}>
       <MapContainer
         center={[lat, lng]}
         zoom={zoom}

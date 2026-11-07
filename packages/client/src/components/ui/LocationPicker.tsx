@@ -42,12 +42,8 @@ export default function LocationPicker({ lat, lng, onChange, height = '240px' }:
 
   return (
     <div>
-      <p className="upload-hint" style={{ marginBottom: '0.4rem' }}>
-        지도를 클릭해 위치를 선택하세요
-      </p>
-      <div
-        style={{ height, borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0' }}
-      >
+      <p className="upload-hint">지도를 클릭해 위치를 선택하세요</p>
+      <div className="map-frame" style={{ height }}>
         <MapContainer
           center={center}
           zoom={14}
@@ -68,7 +64,7 @@ export default function LocationPicker({ lat, lng, onChange, height = '240px' }:
         </MapContainer>
       </div>
       {lat && lng && (
-        <p className="upload-hint" style={{ marginTop: '0.35rem' }}>
+        <p className="upload-hint">
           선택됨: {lat.toFixed(5)}, {lng.toFixed(5)}
         </p>
       )}
