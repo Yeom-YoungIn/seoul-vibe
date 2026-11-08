@@ -1,4 +1,3 @@
-import { promises as fs } from 'fs';
 import { ConfigService } from '@nestjs/config';
 import { SourcePreviewService } from '../../../../src/content/admin/source/source-preview.service';
 import { safeFetch, SourceFetchFailedError } from '../../../../src/content/admin/source/safe-fetch';
@@ -18,13 +17,14 @@ const html = `<meta property="og:title" content="성수 카페">
 
 describe('SourcePreviewService', () => {
   let service: SourcePreviewService;
-  let writeFile: jest.SpyInstance;
+  const put = jest.fn();
 
   beforeEach(() => {
     mockedSafeFetch.mockReset();
-    jest.spyOn(fs, 'mkdir').mockResolvedValue(undefined);
-    writeFile = jest.spyOn(fs, 'writeFile').mockResolvedValue(undefined);
-    service = new SourcePreviewService({ get: () => undefined } as unknown as ConfigService);
+    put.mockReset().mockImplementation(async (key: string) => `/uploads/${key}`);
+    service = new SourcePreviewService({ get: () => undefined } as unknown as ConfigService, {
+      put,
+    });
   });
 
   afterEach(() => jest.restoreAllMocks());
@@ -69,7 +69,11 @@ describe('SourcePreviewService', () => {
       'https://img.test/a.jpg',
       expect.objectContaining({ maxBytes: 5 * 1024 * 1024 })
     );
-    expect(writeFile).toHaveBeenCalledTimes(1);
+    expect(put).toHaveBeenCalledWith(
+      expect.stringMatching(/^sources\/[0-9a-f-]+\.jpg$/),
+      Buffer.from('img'),
+      'image/jpeg'
+    );
     expect(result).toMatchObject({
       sourceUrl: 'https://blog.naver.com/a/1',
       sourceType: 'LINK',
@@ -79,6 +83,24 @@ describe('SourcePreviewService', () => {
       sourceAuthor: null,
     });
     expect(result.sourceImagePath).toMatch(/^\/uploads\/sources\/[0-9a-f-]+\.jpg$/);
+  });
+
+  it('S3 저장소의 절대 URL을 썸네일 경로로 사용한다', async () => {
+    put.mockResolvedValue('https://cdn.test/sources/a.jpg');
+    mockedSafeFetch
+      .mockResolvedValueOnce({
+        finalUrl: 'https://blog.test/1',
+        contentType: 'text/html',
+        body: Buffer.from(html),
+      })
+      .mockResolvedValueOnce({
+        finalUrl: 'https://img.test/a.jpg',
+        contentType: 'image/jpeg',
+        body: Buffer.from('img'),
+      });
+    expect((await service.preview('https://blog.test/1')).sourceImagePath).toBe(
+      'https://cdn.test/sources/a.jpg'
+    );
   });
 
   it('HTML 수집이 실패해도 정규화 결과를 반환한다', async () => {
@@ -113,7 +135,7 @@ describe('SourcePreviewService', () => {
     const result = await service.preview('https://blog.test/1');
 
     expect(result.sourceImagePath).toBeNull();
-    expect(writeFile).not.toHaveBeenCalled();
+    expect(put).not.toHaveBeenCalled();
   });
 
   it('썸네일 수집이 실패해도 나머지 메타는 반환한다', async () => {
