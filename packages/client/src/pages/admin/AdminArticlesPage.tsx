@@ -183,7 +183,7 @@ export default function AdminArticlesPage() {
         ...f,
         source: {
           ...toSourceForm(preview),
-          sourceAuthor: preview.sourceAuthor ?? f.source.sourceAuthor,
+          sourceAuthor: f.source.sourceAuthor.trim() ? f.source.sourceAuthor : (preview.sourceAuthor ?? ''),
         },
       }));
     } catch (err) {
@@ -329,8 +329,13 @@ export default function AdminArticlesPage() {
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
-                        // URL을 직접 바꾸면 이전 미리보기 유형은 더 이상 유효하지 않다
-                        source: { ...f.source, sourceUrl: e.target.value, sourceType: '' },
+                        // URL을 직접 바꾸면 이전 미리보기 결과(유형·제목·설명·사이트·썸네일)는 더 이상 유효하지 않다.
+                        // 관리자가 직접 쓴 작성자만 남긴다.
+                        source: {
+                          ...emptySource(),
+                          sourceUrl: e.target.value,
+                          sourceAuthor: f.source.sourceAuthor,
+                        },
                       }))
                     }
                     placeholder="https://www.instagram.com/p/… or blog post URL"
