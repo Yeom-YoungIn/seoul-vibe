@@ -12,3 +12,16 @@ export class ContentNotFoundError extends HttpException {
     );
   }
 }
+
+export class InvalidSourceUrlError extends HttpException {
+  constructor(message?: string) {
+    super(
+      {
+        statusCode: HttpStatus.BAD_REQUEST,
+        errorCode: 'INVALID_SOURCE_URL',
+        message: message ? message : `invalid source url`,
+      },
+      HttpStatus.BAD_REQUEST
+    );
+  }
+}
