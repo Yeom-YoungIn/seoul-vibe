@@ -4,6 +4,13 @@ import { articlesApi, Article } from '../../lib/api/articles';
 import { formatDate } from '../../lib/format';
 import Spinner from '../../components/ui/Spinner';
 import { useLanguage, useLocalePath } from '../../hooks/useLanguage';
+import { localePath } from '../../lib/locale';
+import ArticleSource from '../../components/ui/ArticleSource';
+
+const MISSING_COPY = {
+  EN: { text: 'Not available in English yet.', other: 'Read it in Korean →' },
+  KO: { text: '아직 한국어 버전이 없습니다.', other: '영어로 보기 →' },
+};
 import { useHeaderTone } from '../../hooks/useHeaderTone';
 
 export default function ArticleDetailPage() {
@@ -17,6 +24,8 @@ export default function ArticleDetailPage() {
 
   useEffect(() => {
     if (!slug) return;
+    setLoading(true);
+    setError(false);
     articlesApi
       .getDetail(slug, language)
       .then(setArticle)
@@ -32,11 +41,19 @@ export default function ArticleDetailPage() {
     );
 
   if (error || !article) {
+    // 상세 API는 해당 언어 번역이 없을 때도 404이므로 반대 언어로 가는 길을 함께 준다
+    const missing = MISSING_COPY[language];
+    const other = language === 'EN' ? 'KO' : 'EN';
     return (
       <div className="page-loading">
         <div className="empty-block">
-          <h2>Article not found.</h2>
-          <Link to={lp('/articles')} className="btn btn-primary btn-sm">
+          <h2>{missing.text}</h2>
+          {slug && (
+            <Link to={localePath(other, `/articles/${slug}`)} className="btn btn-primary btn-sm">
+              {missing.other}
+            </Link>
+          )}
+          <Link to={lp('/articles')} className="btn btn-ghost btn-sm">
             Back to guides
           </Link>
         </div>
@@ -71,6 +88,7 @@ export default function ArticleDetailPage() {
         ) : (
           <p className="muted">No content available in this language yet.</p>
         )}
+        <ArticleSource source={article} />
       </div>
     </article>
   );
