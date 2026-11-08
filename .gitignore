@@ -18,3 +18,6 @@ GEMINI.md
 COPILOT.md
 .cursorrules
 .cursorignore
+
+# CI(deploy-frontend)에서 생성하는 Pages 설정
+packages/client/wrangler.toml

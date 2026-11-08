@@ -103,26 +103,29 @@ Blueprint 고정값과 자동 생성값:
 
 초기화 전에 테이블을 사용하는 API는 실패할 수 있습니다. 운영 중 스키마 변경에는 별도 SQL 검토가 필요하며 동기화를 상시 켜는 방식으로 대체하지 않습니다.
 
-## 5. Cloudflare Pages 연결
+## 5. Cloudflare Pages 배포 (GitHub Actions)
 
-1. **Workers & Pages > Create > Pages > Connect to Git**에서 repository와 배포 브랜치를 연결합니다.
-2. 다음 설정을 입력합니다.
+wb와 같이 Pages Git 연결 대신 GitHub Actions(`.github/workflows/deploy-frontend.yml`)가 main 반영 시 빌드 후 `wrangler pages deploy`로 직접 업로드합니다. Pages 프로젝트가 없으면 첫 실행에서 만듭니다.
 
-   | 항목                       | 값                                                                                                |
-   | -------------------------- | ------------------------------------------------------------------------------------------------- |
-   | Root directory             | `packages/client`                                                                                 |
-   | Build command              | `cd ../.. && npm ci --workspace packages/client --include-workspace-root && npm run build:client` |
-   | Build output directory     | `dist` (project root 기준)                                                                        |
-   | Build environment          | `NODE_VERSION=22`, `SKIP_DEPENDENCY_INSTALL=true`                                                 |
-   | Vite build variable        | `VITE_API_URL=https://<render>.onrender.com`                                                      |
-   | Functions runtime variable | `API_ORIGIN=https://<render>.onrender.com`                                                        |
+1. Cloudflare **My Profile > API Tokens > Create Token**에서 `Account > Cloudflare Pages > Edit` 권한 토큰을 만듭니다. wb용으로 만든 같은 권한의 토큰을 재사용해도 됩니다.
+2. GitHub 저장소 **Settings > Secrets and variables > Actions**에 등록합니다.
 
-   기본 빌드는 `npm run build`이지만 이 저장소의 lockfile은 repository 루트에 있습니다. 자동 설치의 작업 디렉터리에 의존하지 않도록 설치를 끄고, 위 명령으로 repository 루트에서 client workspace만 명시적으로 설치합니다. 별도 디렉터리에 manifests·lockfile을 복사한 새 설치 및 빌드로 검증했습니다. `functions/`는 `packages/client` 아래 그대로 두고 Pages가 자동 번들하도록 합니다. `dist`로 수동 복사하지 않습니다. [빌드 환경](https://developers.cloudflare.com/pages/configuration/build-image/), [모노레포](https://developers.cloudflare.com/pages/configuration/monorepos/).
+   | 종류     | 이름                            | 값                                                                |
+   | -------- | ------------------------------- | ----------------------------------------------------------------- |
+   | Secret   | `CLOUDFLARE_API_TOKEN`          | 1의 토큰                                                          |
+   | Secret   | `CLOUDFLARE_ACCOUNT_ID`         | Cloudflare 대시보드의 Account ID                                  |
+   | Variable | `API_ORIGIN`                    | `https://<render>.onrender.com`                                   |
+   | Variable | `CLOUDFLARE_PAGES_PROJECT_NAME` | (선택) 기본값은 저장소 이름 `seoul-vibe`                          |
+   | Variable | `API_HEALTH_URL`                | (선택) `https://<render>.onrender.com/health` — keep-warm 사용 시 |
 
-3. Functions 변수 `API_ORIGIN`을 **Production과 사용하는 Preview 환경**에 설정합니다. `VITE_API_URL`은 빌드 시 고정되고 `API_ORIGIN`은 함수 실행 시 읽습니다. Render 주소가 바뀌면 둘 다 갱신하고 재배포합니다.
-4. 배포 후 실제 `https://<project>.pages.dev` 주소를 기록합니다.
+   `API_ORIGIN` 하나가 빌드 변수 `VITE_API_URL`과 Functions 런타임 변수 `API_ORIGIN`에 모두 쓰입니다. 워크플로가 배포 직전에 `packages/client/wrangler.toml`을 생성해 런타임 변수를 넣으므로 Cloudflare 대시보드에서 따로 입력하지 않습니다(이 파일은 커밋하지 않음).
+
+3. **Actions > Deploy Frontend > Run workflow**로 첫 배포를 실행합니다(이후에는 main 반영 시 자동).
+4. 로그의 `https://<project>.pages.dev` 주소를 기록합니다.
 5. Render의 **`CORS_ORIGIN`, `CLIENT_URL`, `SITE_URL` 세 값을 모두 실제 Pages 주소**로 맞추고 API를 재배포합니다. CORS를 확인한 뒤 회원가입·인증 링크·canonical을 검사합니다.
 6. 사이트를 공개 운영할 때만 Render의 `SEO_INDEXABLE=true`로 바꿉니다. 기존 SEO 조각 캐시는 최대 300초 남을 수 있으므로 대기 후 확인합니다.
+
+PR마다 `.github/workflows/ci.yml`이 서버 테스트·lint·build와 클라이언트 lint·Functions 테스트·build를 실행합니다. API는 Render가 커밋을 감지해 배포합니다(`render.yaml`의 `autoDeployTrigger: commit`).
 
 ### Pages의 SEO와 라우팅
 

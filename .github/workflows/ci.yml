@@ -1,0 +1,71 @@
+# 목적 - PR과 main 반영 시 서버·클라이언트가 깨지지 않았는지 자동으로 검증한다.
+# 설명 - 루트 lockfile로 workspace 의존성을 한 번에 설치하고 서버 테스트·lint·build, 클라이언트 lint·Functions 테스트·build를 실행한다.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server:
+    name: Server test, lint, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm --workspace packages/server test -- --runInBand
+
+      - name: Lint
+        run: npm run lint:server
+
+      - name: Build
+        run: npm run build:server
+
+  client:
+    name: Client lint, functions test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint:client
+
+      - name: Functions test
+        run: npm --workspace packages/client run test:functions
+
+      - name: Build
+        run: npm run build:client
+        env:
+          VITE_API_URL: https://api.example.invalid
