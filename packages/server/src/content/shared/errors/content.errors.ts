@@ -25,3 +25,16 @@ export class InvalidSourceUrlError extends HttpException {
     );
   }
 }
+
+export class BlockedSourceHostError extends HttpException {
+  constructor(message?: string) {
+    super(
+      {
+        statusCode: HttpStatus.BAD_REQUEST,
+        errorCode: 'BLOCKED_SOURCE_HOST',
+        message: message ? message : `source host is not allowed`,
+      },
+      HttpStatus.BAD_REQUEST
+    );
+  }
+}
