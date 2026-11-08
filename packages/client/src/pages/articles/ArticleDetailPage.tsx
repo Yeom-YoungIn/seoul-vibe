@@ -33,6 +33,11 @@ export default function ArticleDetailPage() {
       .finally(() => setLoading(false));
   }, [slug, language]);
 
+  useEffect(() => {
+    const title = article?.translations[0]?.title;
+    if (title) document.title = `${title} | Seoul Vibe`;
+  }, [article]);
+
   if (loading)
     return (
       <div className="page-loading">

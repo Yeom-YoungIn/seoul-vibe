@@ -1,13 +1,23 @@
-# 목적 - 프론트엔드 정적 파일 서빙과 API/업로드 프록시를 한 컨테이너에서 처리하기 위해 추가됨
-# 설명 - SPA 라우팅, health check, /api 프록시, /uploads 프록시, ALB가 넘긴 proto 보존을 포함한 nginx 템플릿이다.
+# 목적 - 프론트엔드 정적 파일 서빙과 API/업로드 프록시, 크롤러용 SEO 조각 주입을 한 컨테이너에서 처리하기 위해 수정됨
+# 설명 - SPA 라우팅, health check, /api·/uploads 프록시, ALB가 넘긴 proto 보존, index.html SSI(/__seo → 서버 /seo),
+#        sitemap/robots 프록시, 언어 접두어 도입 전 URL의 /en 301 리다이렉트를 포함한 nginx 템플릿이다.
 map $http_x_forwarded_proto $proxy_x_forwarded_proto {
   default $http_x_forwarded_proto;
   "" $scheme;
 }
 
+# SSI include에 넘길 원래 요청 경로 (쿼리 제거). try_files 폴백 후 $uri는 /index.html이 되므로 $request_uri 기준
+map $request_uri $seo_path {
+  "~^(?<path>[^?]*)" $path;
+  default /;
+}
+
 server {
   listen 80;
   server_name _;
+
+  # 프록시(ALB) 뒤에서 http://내부호스트 로 리다이렉트되지 않도록 Location을 상대 경로로 보낸다
+  absolute_redirect off;
 
   root /usr/share/nginx/html;
   index index.html;
@@ -34,6 +44,52 @@ server {
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
+  }
+
+  # 크롤러용 head/body 조각. index.html의 SSI include에서만 호출된다
+  location /__seo/ {
+    internal;
+    # 서버 장애 시 nginx 에러 페이지가 HTML에 끼어들지 않도록 빈 조각으로 대체하고, 느린 응답이 페이지를 붙잡지 않게 짧게 끊는다
+    proxy_intercept_errors on;
+    error_page 400 404 500 502 503 504 = @seo_empty;
+    proxy_connect_timeout 2s;
+    proxy_read_timeout 3s;
+    proxy_pass ${SERVER_UPSTREAM}/seo/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
+  }
+
+  location @seo_empty {
+    return 204;
+  }
+
+  location = /sitemap.xml {
+    proxy_pass ${SERVER_UPSTREAM}/seo/sitemap.xml;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
+  }
+
+  location = /robots.txt {
+    proxy_pass ${SERVER_UPSTREAM}/seo/robots.txt;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
+  }
+
+  # 언어 접두어 도입 전 공개 URL은 /en 아래로 영구 이동
+  location ~ ^/(articles|feed|posts)(/.*)?$ {
+    return 301 /en$request_uri;
+  }
+
+  location = /index.html {
+    ssi on;
+    ssi_silent_errors on;
+    ssi_types text/html;
+    add_header Cache-Control "no-cache";
   }
 
   location / {

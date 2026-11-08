@@ -1,8 +1,9 @@
 # 목적 - AWS dev 환경의 백엔드 비민감 설정을 base ConfigMap에 주입하기 위해 추가됨
-# 설명 - CORS origin을 dev host로 분리해 prod와 같은 base 파일을 공유하면서 환경별 요청 출처를 구분한다.
+# 설명 - CORS origin과 SEO 기준 URL(SITE_URL)을 dev host로 분리해 prod와 같은 base 파일을 공유하면서 환경별 요청 출처를 구분한다. dev는 SEO_INDEXABLE 기본값(false)으로 검색 노출을 막는다.
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: seoul-vibe-server-config
 data:
   CORS_ORIGIN: http://dev.seoul-vibe.example.com
+  SITE_URL: http://dev.seoul-vibe.example.com
