@@ -1,0 +1,23 @@
+# 목적 - 선택적으로 무료 API의 유휴 진입을 줄인다.
+# 설명 - 저장소 변수가 없으면 네트워크 요청 없이 성공하고 요청에는 시간 제한을 둔다.
+name: API keep warm
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check API health when configured
+        env:
+          API_HEALTH_URL: ${{ vars.API_HEALTH_URL }}
+        run: |
+          if [ -z "$API_HEALTH_URL" ]; then
+            echo 'API_HEALTH_URL is unset; skipping.'
+            exit 0
+          fi
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 120 "$API_HEALTH_URL"
