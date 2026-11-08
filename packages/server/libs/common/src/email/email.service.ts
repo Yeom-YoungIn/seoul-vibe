@@ -1,3 +1,7 @@
+/**
+ * 목적 - 기존 SMTP로 회원가입 인증 메일을 전송한다.
+ * 설명 - 문자열 환경변수의 포트와 TLS 플래그를 nodemailer 타입에 맞게 변환한다.
+ */
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
@@ -10,8 +14,8 @@ export class EmailService {
   constructor(private readonly configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
       host: this.configService.getOrThrow<string>('MAIL_HOST'),
-      port: this.configService.get<number>('MAIL_PORT', 587),
-      secure: this.configService.get<boolean>('MAIL_SECURE', false),
+      port: Number(this.configService.get('MAIL_PORT', 587)),
+      secure: String(this.configService.get('MAIL_SECURE', false)) === 'true',
       auth: {
         user: this.configService.getOrThrow<string>('MAIL_USER'),
         pass: this.configService.getOrThrow<string>('MAIL_PASS'),
