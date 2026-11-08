@@ -38,7 +38,7 @@ export default function ArticleDetailPage() {
           .getDetail(slug, other)
           .then(() => setOtherExists(true))
           .catch(() => setOtherExists(false))
-          .finally(() => setError(true)),
+          .finally(() => setError(true))
       )
       .finally(() => setLoading(false));
   }, [slug, language, other]);
