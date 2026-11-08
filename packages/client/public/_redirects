@@ -1,0 +1,4 @@
+/articles /en/articles 301
+/feed /en/feed 301
+/articles/* /en/articles/:splat 301
+/posts/* /en/posts/:splat 301

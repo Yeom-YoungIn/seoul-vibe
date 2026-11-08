@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run typecheck:functions && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "typecheck:functions": "tsc -p tsconfig.functions.json",
+    "test:functions": "tsc -p tsconfig.functions.json --noEmit false && node --test test/functions/*.test.cjs"
   },
   "dependencies": {
     "axios": "^1.15.0",
