@@ -1,5 +1,8 @@
-import { promises as dns } from 'dns';
+import { LookupAddress, promises as dns } from 'dns';
+import * as http from 'http';
+import * as https from 'https';
 import { BlockList, isIP } from 'net';
+import { Readable } from 'stream';
 import { BlockedSourceHostError } from '../../shared/errors/content.errors';
 
 export class SourceFetchFailedError extends Error {
@@ -55,6 +58,74 @@ const defaultLookup = async (host: string): Promise<string[]> => {
   return records.map((record) => record.address);
 };
 
+// node transport는 리다이렉트를 따라가지 않으므로 redirect: 'manual'은 fetch 주입 시에만 의미가 있다
+type Transport = (
+  url: string,
+  init: { redirect: 'manual'; signal: AbortSignal; headers: Record<string, string> }
+) => Promise<Response>;
+
+const NULL_BODY_STATUS = [101, 204, 205, 304];
+
+/**
+ * node http(s) 기반 transport. 연결 시점의 DNS lookup에서도 사설 주소를 다시 거부해
+ * 사전 검사와 실제 연결 사이에 DNS 응답이 바뀌는 리바인딩을 막는다 (검사한 주소로만 연결).
+ */
+const pinnedTransport =
+  (lookup: (host: string) => Promise<string[]>): Transport =>
+  (url, init) =>
+    new Promise((resolve, reject) => {
+      const target = new URL(url);
+      const client = target.protocol === 'https:' ? https : http;
+
+      const req = client.request(
+        target,
+        {
+          method: 'GET',
+          headers: init.headers,
+          signal: init.signal,
+          lookup: (hostname, options, callback) => {
+            lookup(hostname).then(
+              (addresses) => {
+                if (!addresses.length || addresses.some(isPrivateAddress)) {
+                  callback(new BlockedSourceHostError() as unknown as NodeJS.ErrnoException, '', 4);
+                  return;
+                }
+                if (options.all) {
+                  const all: LookupAddress[] = addresses.map((address) => ({
+                    address,
+                    family: isIP(address),
+                  }));
+                  (callback as unknown as (err: null, addresses: LookupAddress[]) => void)(
+                    null,
+                    all
+                  );
+                } else {
+                  callback(null, addresses[0], isIP(addresses[0]));
+                }
+              },
+              (error) => callback(error, '', 4)
+            );
+          },
+        },
+        (res) => {
+          const headers = new Headers();
+          for (const [key, value] of Object.entries(res.headers)) {
+            if (value !== undefined)
+              headers.set(key, Array.isArray(value) ? value.join(', ') : value);
+          }
+          const status = res.statusCode ?? 502;
+          const body = NULL_BODY_STATUS.includes(status)
+            ? null
+            : (Readable.toWeb(res) as ReadableStream);
+          if (!body) res.resume();
+          resolve(new Response(body, { status, headers }));
+        }
+      );
+
+      req.on('error', reject);
+      req.end();
+    });
+
 const assertPublicHost = async (url: URL, lookup: (host: string) => Promise<string[]>) => {
   if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new BlockedSourceHostError();
 
@@ -90,8 +161,8 @@ const readLimited = async (res: Response, maxBytes: number): Promise<Buffer> => 
 };
 
 export async function safeFetch(url: string, opts: SafeFetchOptions): Promise<SafeFetchResult> {
-  const fetchImpl = opts.fetchImpl ?? fetch;
   const lookup = opts.lookup ?? defaultLookup;
+  const fetchImpl: Transport = opts.fetchImpl ?? pinnedTransport(lookup);
   const maxRedirects = opts.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
 
   const controller = new AbortController();
@@ -110,6 +181,7 @@ export async function safeFetch(url: string, opts: SafeFetchOptions): Promise<Sa
           headers: { 'User-Agent': opts.userAgent, Accept: 'text/html,image/*;q=0.9,*/*;q=0.5' },
         });
       } catch (error) {
+        if (error instanceof BlockedSourceHostError) throw error;
         throw new SourceFetchFailedError(`request failed: ${(error as Error).message}`);
       }
 

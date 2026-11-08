@@ -122,4 +122,20 @@ describe('safeFetch', () => {
       })
     );
   });
+
+  it('검사 후 DNS가 사설 IP로 바뀌면(리바인딩) 실제 연결 단계에서 차단한다', async () => {
+    // 기본 transport(node http)를 사용: 사전 검사에서는 공인 IP, 연결 시점 lookup에서는 루프백을 돌려준다
+    const answers = [['93.184.216.34'], ['127.0.0.1']];
+    const lookup = jest.fn(async () => answers.shift() ?? ['127.0.0.1']);
+
+    await expect(
+      safeFetch('http://rebind.test/', {
+        maxBytes: 1024,
+        userAgent: 'test',
+        lookup,
+        timeoutMs: 2000,
+      })
+    ).rejects.toBeInstanceOf(BlockedSourceHostError);
+    expect(lookup).toHaveBeenCalledTimes(2);
+  });
 });
