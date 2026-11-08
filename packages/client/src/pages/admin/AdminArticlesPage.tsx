@@ -44,11 +44,12 @@ const toSourcePayload = (source: SourceForm) => {
   return Object.fromEntries(
     Object.entries(source)
       .filter(([key]) => key !== 'sourceType')
-      .map(([key, value]) => [key, value.trim() ? value.trim() : null]),
+      .map(([key, value]) => [key, value.trim() ? value.trim() : null])
   );
 };
 
-const BODY_PLACEHOLDER = '원문을 복사하지 말고, 직접 쓴 추천 이유·위치·팁을 3~6문장으로 적어주세요.';
+const BODY_PLACEHOLDER =
+  '원문을 복사하지 말고, 직접 쓴 추천 이유·위치·팁을 3~6문장으로 적어주세요.';
 
 const emptyForm = (): ArticleFormState => ({
   slug: '',
@@ -180,7 +181,10 @@ export default function AdminArticlesPage() {
       // 관리자가 이미 입력한 작성자는 덮어쓰지 않는다
       setForm((f) => ({
         ...f,
-        source: { ...toSourceForm(preview), sourceAuthor: preview.sourceAuthor ?? f.source.sourceAuthor },
+        source: {
+          ...toSourceForm(preview),
+          sourceAuthor: preview.sourceAuthor ?? f.source.sourceAuthor,
+        },
       }));
     } catch (err) {
       setPreviewError(getApiErrorMessage(err, 'Failed to load the source.'));

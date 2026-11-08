@@ -32,7 +32,8 @@ const OG_LOCALE: Record<UrlLang, string> = { en: 'en_US', ko: 'ko_KR' };
 const HOME_COPY: Record<UrlLang, { title: string; description: string; guides: string }> = {
   en: {
     title: 'Seoul Vibe — Local places in Seoul',
-    description: 'Curated guides and first-hand posts about restaurants, cafés and hidden spots in Seoul.',
+    description:
+      'Curated guides and first-hand posts about restaurants, cafés and hidden spots in Seoul.',
     guides: 'Guides | ',
   },
   ko: {
@@ -95,18 +96,25 @@ export function summarize(bodyHtml: string | null, bodyText: string | null): str
         sanitizeHtml(bodyHtml.replace(/<\/(p|div|li|h[1-6])>|<br\s*\/?>/gi, '$& '), {
           allowedTags: [],
           allowedAttributes: {},
-        }),
+        })
       )
     : (bodyText ?? '');
   const text = source.replace(/\s+/g, ' ').trim();
   return text.length > DESCRIPTION_LIMIT ? `${text.slice(0, DESCRIPTION_LIMIT).trimEnd()}…` : text;
 }
 
-export function renderDefaultHead(cfg: SeoConfig, route: SeoRoute, opts: { noindex?: boolean } = {}): string {
+export function renderDefaultHead(
+  cfg: SeoConfig,
+  route: SeoRoute,
+  opts: { noindex?: boolean } = {}
+): string {
   const lang: UrlLang = route.kind === 'other' ? 'en' : route.lang;
   const copy = HOME_COPY[lang];
   const title = route.kind === 'articles' ? copy.guides + copy.title : copy.title;
-  const tags = [`<title>${escapeHtml(title)}</title>`, meta('name', 'description', copy.description)];
+  const tags = [
+    `<title>${escapeHtml(title)}</title>`,
+    meta('name', 'description', copy.description),
+  ];
 
   if (route.kind === 'home' || route.kind === 'articles') {
     const pathFor = (l: UrlLang) => (route.kind === 'home' ? `/${l}` : `/${l}/articles`);
@@ -115,7 +123,7 @@ export function renderDefaultHead(cfg: SeoConfig, route: SeoRoute, opts: { noind
       ...alternateLinks(cfg, pathFor, URL_LANGS),
       meta('property', 'og:type', 'website'),
       meta('property', 'og:url', cfg.siteUrl + pathFor(lang)),
-      meta('property', 'og:locale', OG_LOCALE[lang]),
+      meta('property', 'og:locale', OG_LOCALE[lang])
     );
   }
 
@@ -173,16 +181,22 @@ export function renderArticleBody(a: ArticleSeoData): string {
   const date = (a.publishedAt ?? a.updatedAt).toISOString();
   const source = a.sourceUrl
     ? `<p>${SOURCE_LABEL[a.lang]}: <a href="${escapeHtml(a.sourceUrl)}" rel="noopener">${escapeHtml(
-        [a.sourceAuthor, a.sourceSiteName].filter(Boolean).join(' · ') || a.sourceUrl,
+        [a.sourceAuthor, a.sourceSiteName].filter(Boolean).join(' · ') || a.sourceUrl
       )}</a></p>`
     : '';
 
   return `<article><h1>${escapeHtml(a.title)}</h1><time datetime="${date}">${date.slice(0, 10)}</time>${body}${source}</article>`;
 }
 
-export function renderArticleListBody(lang: UrlLang, items: { slug: string; title: string }[]): string {
+export function renderArticleListBody(
+  lang: UrlLang,
+  items: { slug: string; title: string }[]
+): string {
   const links = items
-    .map((item) => `<li><a href="/${lang}/articles/${encodeURIComponent(item.slug)}">${escapeHtml(item.title)}</a></li>`)
+    .map(
+      (item) =>
+        `<li><a href="/${lang}/articles/${encodeURIComponent(item.slug)}">${escapeHtml(item.title)}</a></li>`
+    )
     .join('');
   return `<nav><h1>${escapeHtml(HOME_COPY[lang].guides.replace(' | ', ''))}</h1><ul>${links}</ul></nav>`;
 }
@@ -191,9 +205,14 @@ export function renderSitemap(cfg: SeoConfig, entries: SitemapEntry[]): string {
   const urls = cfg.indexable
     ? entries.map((entry) => {
         const alternates = (Object.entries(entry.alternates) as [UrlLang, string][])
-          .map(([lang, path]) => `<xhtml:link rel="alternate" hreflang="${lang}" href="${escapeHtml(cfg.siteUrl + path)}"/>`)
+          .map(
+            ([lang, path]) =>
+              `<xhtml:link rel="alternate" hreflang="${lang}" href="${escapeHtml(cfg.siteUrl + path)}"/>`
+          )
           .join('');
-        const lastmod = entry.lastmod ? `<lastmod>${entry.lastmod.toISOString().slice(0, 10)}</lastmod>` : '';
+        const lastmod = entry.lastmod
+          ? `<lastmod>${entry.lastmod.toISOString().slice(0, 10)}</lastmod>`
+          : '';
         return `<url><loc>${escapeHtml(cfg.siteUrl + entry.path)}</loc>${lastmod}${alternates}</url>`;
       })
     : [];

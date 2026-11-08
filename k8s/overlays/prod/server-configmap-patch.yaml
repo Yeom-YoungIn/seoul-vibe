@@ -7,4 +7,4 @@ metadata:
 data:
   CORS_ORIGIN: http://seoul-vibe.example.com
   SITE_URL: http://seoul-vibe.example.com
-  SEO_INDEXABLE: "true"
+  SEO_INDEXABLE: 'true'

@@ -29,12 +29,21 @@ export default function ArticleSource({ source }: { source: ArticleSourceData })
       ) : (
         <a className="source-card" href={source.sourceUrl} target="_blank" rel="noopener">
           {source.sourceImagePath && (
-            <img className="source-card-thumb" src={assetUrl(source.sourceImagePath)} alt="" loading="lazy" />
+            <img
+              className="source-card-thumb"
+              src={assetUrl(source.sourceImagePath)}
+              alt=""
+              loading="lazy"
+            />
           )}
           <span className="source-card-body">
             <strong className="source-card-title">{source.sourceTitle ?? source.sourceUrl}</strong>
-            {source.sourceDescription && <span className="source-card-desc">{source.sourceDescription}</span>}
-            {source.sourceSiteName && <span className="source-card-site">{source.sourceSiteName}</span>}
+            {source.sourceDescription && (
+              <span className="source-card-desc">{source.sourceDescription}</span>
+            )}
+            {source.sourceSiteName && (
+              <span className="source-card-site">{source.sourceSiteName}</span>
+            )}
           </span>
         </a>
       )}

@@ -35,7 +35,7 @@ describe('safeFetch', () => {
   const buildOptions = (
     fetchImpl: jest.Mock,
     hosts: Record<string, string[]> = {},
-    overrides: Partial<SafeFetchOptions> = {},
+    overrides: Partial<SafeFetchOptions> = {}
   ): SafeFetchOptions => ({
     maxBytes: 1024,
     userAgent: 'SeoulVibeBot/1.0 (+http://localhost:5173)',
@@ -47,25 +47,30 @@ describe('safeFetch', () => {
   it('호스트가 사설 IP로 해석되면 차단한다', async () => {
     const fetchImpl = jest.fn();
     await expect(
-      safeFetch('http://evil.test/', buildOptions(fetchImpl, { 'evil.test': ['10.0.0.5'] })),
+      safeFetch('http://evil.test/', buildOptions(fetchImpl, { 'evil.test': ['10.0.0.5'] }))
     ).rejects.toBeInstanceOf(BlockedSourceHostError);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it('IP 리터럴 사설 주소도 차단한다', async () => {
     const fetchImpl = jest.fn();
-    await expect(safeFetch('http://127.0.0.1:3000/', buildOptions(fetchImpl))).rejects.toBeInstanceOf(
-      BlockedSourceHostError,
-    );
+    await expect(
+      safeFetch('http://127.0.0.1:3000/', buildOptions(fetchImpl))
+    ).rejects.toBeInstanceOf(BlockedSourceHostError);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it('리다이렉트 대상이 사설 IP면 차단한다', async () => {
     const fetchImpl = jest
       .fn()
-      .mockResolvedValueOnce(new Response(null, { status: 302, headers: { location: 'http://internal.test/' } }));
+      .mockResolvedValueOnce(
+        new Response(null, { status: 302, headers: { location: 'http://internal.test/' } })
+      );
     await expect(
-      safeFetch('http://public.test/', buildOptions(fetchImpl, { 'internal.test': ['169.254.169.254'] })),
+      safeFetch(
+        'http://public.test/',
+        buildOptions(fetchImpl, { 'internal.test': ['169.254.169.254'] })
+      )
     ).rejects.toBeInstanceOf(BlockedSourceHostError);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
@@ -73,9 +78,11 @@ describe('safeFetch', () => {
   it('리다이렉트가 3회를 넘으면 실패한다', async () => {
     const fetchImpl = jest
       .fn()
-      .mockImplementation(async () => new Response(null, { status: 301, headers: { location: '/next' } }));
+      .mockImplementation(
+        async () => new Response(null, { status: 301, headers: { location: '/next' } })
+      );
     await expect(safeFetch('http://public.test/', buildOptions(fetchImpl))).rejects.toBeInstanceOf(
-      SourceFetchFailedError,
+      SourceFetchFailedError
     );
     expect(fetchImpl).toHaveBeenCalledTimes(4);
   });
@@ -83,14 +90,14 @@ describe('safeFetch', () => {
   it('maxBytes를 넘으면 중단한다', async () => {
     const fetchImpl = jest.fn().mockResolvedValue(htmlResponse('a'.repeat(1025)));
     await expect(safeFetch('http://public.test/', buildOptions(fetchImpl))).rejects.toBeInstanceOf(
-      SourceFetchFailedError,
+      SourceFetchFailedError
     );
   });
 
   it('4xx/5xx 응답은 실패한다', async () => {
     const fetchImpl = jest.fn().mockResolvedValue(htmlResponse('nope', { status: 404 }));
     await expect(safeFetch('http://public.test/', buildOptions(fetchImpl))).rejects.toBeInstanceOf(
-      SourceFetchFailedError,
+      SourceFetchFailedError
     );
   });
 
@@ -109,8 +116,10 @@ describe('safeFetch', () => {
       'http://public.test/start',
       expect.objectContaining({
         redirect: 'manual',
-        headers: expect.objectContaining({ 'User-Agent': 'SeoulVibeBot/1.0 (+http://localhost:5173)' }),
-      }),
+        headers: expect.objectContaining({
+          'User-Agent': 'SeoulVibeBot/1.0 (+http://localhost:5173)',
+        }),
+      })
     );
   });
 });

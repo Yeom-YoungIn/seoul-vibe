@@ -62,12 +62,12 @@ describe('SourcePreviewService', () => {
     expect(mockedSafeFetch).toHaveBeenNthCalledWith(
       1,
       'https://m.blog.naver.com/a/1',
-      expect.objectContaining({ maxBytes: 2 * 1024 * 1024 }),
+      expect.objectContaining({ maxBytes: 2 * 1024 * 1024 })
     );
     expect(mockedSafeFetch).toHaveBeenNthCalledWith(
       2,
       'https://img.test/a.jpg',
-      expect.objectContaining({ maxBytes: 5 * 1024 * 1024 }),
+      expect.objectContaining({ maxBytes: 5 * 1024 * 1024 })
     );
     expect(writeFile).toHaveBeenCalledTimes(1);
     expect(result).toMatchObject({
@@ -99,8 +99,16 @@ describe('SourcePreviewService', () => {
 
   it('이미지가 아닌 응답은 썸네일로 저장하지 않는다', async () => {
     mockedSafeFetch
-      .mockResolvedValueOnce({ finalUrl: 'https://blog.test/1', contentType: 'text/html', body: Buffer.from(html) })
-      .mockResolvedValueOnce({ finalUrl: 'https://img.test/a.jpg', contentType: 'text/html', body: Buffer.from('x') });
+      .mockResolvedValueOnce({
+        finalUrl: 'https://blog.test/1',
+        contentType: 'text/html',
+        body: Buffer.from(html),
+      })
+      .mockResolvedValueOnce({
+        finalUrl: 'https://img.test/a.jpg',
+        contentType: 'text/html',
+        body: Buffer.from('x'),
+      });
 
     const result = await service.preview('https://blog.test/1');
 
@@ -110,7 +118,11 @@ describe('SourcePreviewService', () => {
 
   it('썸네일 수집이 실패해도 나머지 메타는 반환한다', async () => {
     mockedSafeFetch
-      .mockResolvedValueOnce({ finalUrl: 'https://blog.test/1', contentType: 'text/html', body: Buffer.from(html) })
+      .mockResolvedValueOnce({
+        finalUrl: 'https://blog.test/1',
+        contentType: 'text/html',
+        body: Buffer.from(html),
+      })
       .mockRejectedValueOnce(new SourceFetchFailedError('too large'));
 
     const result = await service.preview('https://blog.test/1');
@@ -122,6 +134,8 @@ describe('SourcePreviewService', () => {
   it('차단된 호스트 에러는 그대로 전파한다', async () => {
     mockedSafeFetch.mockRejectedValueOnce(new BlockedSourceHostError());
 
-    await expect(service.preview('http://localhost:3000/')).rejects.toBeInstanceOf(BlockedSourceHostError);
+    await expect(service.preview('http://localhost:3000/')).rejects.toBeInstanceOf(
+      BlockedSourceHostError
+    );
   });
 });

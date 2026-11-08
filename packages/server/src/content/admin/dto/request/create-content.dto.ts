@@ -35,7 +35,11 @@ export class CreateContentTranslationDto {
 }
 
 export class ContentSourceDto {
-  @ApiPropertyOptional({ description: '원문 URL (null이면 출처 제거)', maxLength: 2048, nullable: true })
+  @ApiPropertyOptional({
+    description: '원문 URL (null이면 출처 제거)',
+    maxLength: 2048,
+    nullable: true,
+  })
   @IsOptional()
   @IsString()
   @MaxLength(2048)

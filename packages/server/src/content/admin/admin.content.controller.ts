@@ -35,7 +35,7 @@ import {
 export class AdminContentController {
   constructor(
     private readonly adminContentService: AdminContentService,
-    private readonly sourcePreviewService: SourcePreviewService,
+    private readonly sourcePreviewService: SourcePreviewService
   ) {}
 
   @Post('source-preview')

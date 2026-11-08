@@ -9,7 +9,12 @@ describe('normalizeSourceUrl', () => {
       'INSTAGRAM',
       null,
     ],
-    ['https://instagram.com/reel/AbC_12-x#x', 'https://www.instagram.com/reel/AbC_12-x/', 'INSTAGRAM', null],
+    [
+      'https://instagram.com/reel/AbC_12-x#x',
+      'https://www.instagram.com/reel/AbC_12-x/',
+      'INSTAGRAM',
+      null,
+    ],
     [
       'https://www.instagram.com/someuser/p/DcOEG9qkwW6/',
       'https://www.instagram.com/p/DcOEG9qkwW6/',
@@ -45,13 +50,18 @@ describe('normalizeSourceUrl', () => {
   });
 
   it('앞뒤 공백을 제거한다', () => {
-    expect(normalizeSourceUrl('  https://foo.tistory.com/12  ').url).toBe('https://foo.tistory.com/12');
+    expect(normalizeSourceUrl('  https://foo.tistory.com/12  ').url).toBe(
+      'https://foo.tistory.com/12'
+    );
   });
 
-  it.each(['ftp://a.com/x', 'javascript:alert(1)', 'not a url', '', 'https://www.instagram.com/someuser/'])(
-    '%s 는 InvalidSourceUrlError',
-    (raw) => {
-      expect(() => normalizeSourceUrl(raw)).toThrow(InvalidSourceUrlError);
-    },
-  );
+  it.each([
+    'ftp://a.com/x',
+    'javascript:alert(1)',
+    'not a url',
+    '',
+    'https://www.instagram.com/someuser/',
+  ])('%s 는 InvalidSourceUrlError', (raw) => {
+    expect(() => normalizeSourceUrl(raw)).toThrow(InvalidSourceUrlError);
+  });
 });

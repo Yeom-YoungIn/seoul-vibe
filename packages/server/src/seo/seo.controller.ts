@@ -16,17 +16,26 @@ export class SeoController {
 
   @Get('head/*')
   async head(@Req() req: Request, @Res() res: Response) {
-    res.type('text/html').set('Cache-Control', CACHE_CONTROL).send(await this.seoService.head(stripPrefix(req, 'head')));
+    res
+      .type('text/html')
+      .set('Cache-Control', CACHE_CONTROL)
+      .send(await this.seoService.head(stripPrefix(req, 'head')));
   }
 
   @Get('body/*')
   async body(@Req() req: Request, @Res() res: Response) {
-    res.type('text/html').set('Cache-Control', CACHE_CONTROL).send(await this.seoService.body(stripPrefix(req, 'body')));
+    res
+      .type('text/html')
+      .set('Cache-Control', CACHE_CONTROL)
+      .send(await this.seoService.body(stripPrefix(req, 'body')));
   }
 
   @Get('sitemap.xml')
   async sitemap(@Res() res: Response) {
-    res.type('application/xml').set('Cache-Control', CACHE_CONTROL).send(await this.seoService.sitemap());
+    res
+      .type('application/xml')
+      .set('Cache-Control', CACHE_CONTROL)
+      .send(await this.seoService.sitemap());
   }
 
   @Get('robots.txt')

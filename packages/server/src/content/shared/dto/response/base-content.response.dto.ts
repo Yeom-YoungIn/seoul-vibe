@@ -31,7 +31,11 @@ export class BaseContentResponseDto {
   @Expose()
   sourceUrl?: string | null;
 
-  @ApiPropertyOptional({ description: '원문 유형 (INSTAGRAM | LINK)', type: String, nullable: true })
+  @ApiPropertyOptional({
+    description: '원문 유형 (INSTAGRAM | LINK)',
+    type: String,
+    nullable: true,
+  })
   @Expose()
   sourceType?: string | null;
 

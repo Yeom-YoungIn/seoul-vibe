@@ -34,7 +34,9 @@ describe('parseSourceMeta', () => {
 
   it('상대 경로 og:image를 절대 URL로 바꾼다', () => {
     const html = `<meta property="og:image" content="/img/a.jpg">`;
-    expect(parseSourceMeta(html, 'https://foo.tistory.com/12').imageUrl).toBe('https://foo.tistory.com/img/a.jpg');
+    expect(parseSourceMeta(html, 'https://foo.tistory.com/12').imageUrl).toBe(
+      'https://foo.tistory.com/img/a.jpg'
+    );
   });
 
   it('HTML 엔티티를 디코딩한다', () => {

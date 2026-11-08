@@ -26,7 +26,13 @@ const IMAGE_EXT: Record<string, string> = {
   'image/webp': 'webp',
   'image/gif': 'gif',
 };
-const EMPTY_META: SourceMeta = { title: null, description: null, siteName: null, author: null, imageUrl: null };
+const EMPTY_META: SourceMeta = {
+  title: null,
+  description: null,
+  siteName: null,
+  author: null,
+  imageUrl: null,
+};
 
 @Injectable()
 export class SourcePreviewService {
@@ -42,7 +48,12 @@ export class SourcePreviewService {
 
     // 인스타그램은 서버 요청 시 로그인 벽이 뜨므로 공식 임베드에 맡긴다
     if (normalized.type === 'INSTAGRAM' || !normalized.fetchUrl) {
-      return this.toResult(normalized.url, normalized.type, { ...EMPTY_META, siteName: 'Instagram' }, null);
+      return this.toResult(
+        normalized.url,
+        normalized.type,
+        { ...EMPTY_META, siteName: 'Instagram' },
+        null
+      );
     }
 
     const meta = await this.fetchMeta(normalized.fetchUrl);
@@ -62,7 +73,10 @@ export class SourcePreviewService {
 
   private async saveThumbnail(imageUrl: string): Promise<string | null> {
     try {
-      const res = await safeFetch(imageUrl, { maxBytes: IMAGE_MAX_BYTES, userAgent: this.userAgent });
+      const res = await safeFetch(imageUrl, {
+        maxBytes: IMAGE_MAX_BYTES,
+        userAgent: this.userAgent,
+      });
       const ext = IMAGE_EXT[res.contentType];
       if (!ext) return null;
 
@@ -81,7 +95,7 @@ export class SourcePreviewService {
     sourceUrl: string,
     sourceType: SourceType,
     meta: SourceMeta,
-    sourceImagePath: string | null,
+    sourceImagePath: string | null
   ): SourcePreviewResult {
     return {
       sourceUrl,

@@ -25,10 +25,13 @@ export class SeoService {
   constructor(
     @InjectRepository(Content)
     private readonly contentRepository: Repository<Content>,
-    configService: ConfigService,
+    configService: ConfigService
   ) {
     this.cfg = {
-      siteUrl: (configService.get<string>('SITE_URL') ?? 'http://localhost:5173').replace(/\/+$/, ''),
+      siteUrl: (configService.get<string>('SITE_URL') ?? 'http://localhost:5173').replace(
+        /\/+$/,
+        ''
+      ),
       indexable: configService.get<string>('SEO_INDEXABLE') === 'true',
     };
   }
@@ -38,7 +41,9 @@ export class SeoService {
     if (route.kind !== 'article') return renderDefaultHead(this.cfg, route);
 
     const article = await this.findArticle(route.slug, route.lang);
-    return article ? renderArticleHead(this.cfg, article) : renderDefaultHead(this.cfg, route, { noindex: true });
+    return article
+      ? renderArticleHead(this.cfg, article)
+      : renderDefaultHead(this.cfg, route, { noindex: true });
   }
 
   async body(path: string): Promise<string> {
@@ -51,14 +56,20 @@ export class SeoService {
 
     if (route.kind === 'articles') {
       const contents = await this.contentRepository.find({
-        where: { isPublished: true, deletedAt: IsNull(), translations: { locale: toLanguage(route.lang) } },
+        where: {
+          isPublished: true,
+          deletedAt: IsNull(),
+          translations: { locale: toLanguage(route.lang) },
+        },
         relations: { translations: true },
         order: { createdAt: 'DESC' },
         take: LIST_LIMIT,
       });
       const items = contents.map((content) => ({
         slug: content.slug,
-        title: content.translations.find((t) => t.locale === toLanguage(route.lang))?.title ?? content.slug,
+        title:
+          content.translations.find((t) => t.locale === toLanguage(route.lang))?.title ??
+          content.slug,
       }));
       return renderArticleListBody(route.lang, items);
     }

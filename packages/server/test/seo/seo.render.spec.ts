@@ -39,9 +39,15 @@ describe('renderArticleHead', () => {
 
     expect(head).toContain('<title>제목 | Seoul Vibe</title>');
     expect(head).toContain('<link rel="canonical" href="https://sv.test/ko/articles/a">');
-    expect(head).toContain('<link rel="alternate" hreflang="en" href="https://sv.test/en/articles/a">');
-    expect(head).toContain('<link rel="alternate" hreflang="ko" href="https://sv.test/ko/articles/a">');
-    expect(head).toContain('<link rel="alternate" hreflang="x-default" href="https://sv.test/en/articles/a">');
+    expect(head).toContain(
+      '<link rel="alternate" hreflang="en" href="https://sv.test/en/articles/a">'
+    );
+    expect(head).toContain(
+      '<link rel="alternate" hreflang="ko" href="https://sv.test/ko/articles/a">'
+    );
+    expect(head).toContain(
+      '<link rel="alternate" hreflang="x-default" href="https://sv.test/en/articles/a">'
+    );
     expect(head).toContain('<meta property="og:image" content="https://sv.test/og-default.png">');
     expect(head).toContain('<meta property="og:type" content="article">');
     expect(head).toContain('<meta property="og:locale" content="ko_KR">');
@@ -58,7 +64,7 @@ describe('renderArticleHead', () => {
 
   it('en 페이지는 og:locale이 en_US다', () => {
     expect(renderArticleHead(cfg, buildArticle({ lang: 'en' }))).toContain(
-      '<meta property="og:locale" content="en_US">',
+      '<meta property="og:locale" content="en_US">'
     );
   });
 
@@ -66,7 +72,9 @@ describe('renderArticleHead', () => {
     const head = renderArticleHead(cfg, buildArticle({ availableLangs: ['ko'] }));
 
     expect(head).not.toContain('hreflang="en"');
-    expect(head).toContain('<link rel="alternate" hreflang="x-default" href="https://sv.test/ko/articles/a">');
+    expect(head).toContain(
+      '<link rel="alternate" hreflang="x-default" href="https://sv.test/ko/articles/a">'
+    );
   });
 
   it('출처가 없으면 isBasedOn을 넣지 않는다', () => {
@@ -113,7 +121,7 @@ describe('renderDefaultHead', () => {
 
   it('noindex 옵션을 지원한다', () => {
     expect(renderDefaultHead(cfg, { kind: 'other' }, { noindex: true })).toContain(
-      '<meta name="robots" content="noindex, nofollow">',
+      '<meta name="robots" content="noindex, nofollow">'
     );
   });
 });
@@ -121,7 +129,7 @@ describe('renderDefaultHead', () => {
 describe('renderArticleBody', () => {
   it('bodyHtml의 위험한 태그와 속성을 제거한다', () => {
     const body = renderArticleBody(
-      buildArticle({ bodyHtml: '<p>hi</p><script>x()</script><img src="x.jpg" onerror="y()">' }),
+      buildArticle({ bodyHtml: '<p>hi</p><script>x()</script><img src="x.jpg" onerror="y()">' })
     );
 
     expect(body).toContain('<p>hi</p>');
@@ -196,7 +204,9 @@ describe('renderSitemap', () => {
     const xml = renderSitemap(cfg, entries);
     expect(xml).toContain('xmlns:xhtml="http://www.w3.org/1999/xhtml"');
     expect(xml).toContain('<loc>https://sv.test/ko/articles/a</loc>');
-    expect(xml).toContain('<xhtml:link rel="alternate" hreflang="en" href="https://sv.test/en/articles/a"/>');
+    expect(xml).toContain(
+      '<xhtml:link rel="alternate" hreflang="en" href="https://sv.test/en/articles/a"/>'
+    );
     expect(xml).toContain('<lastmod>2026-11-02</lastmod>');
   });
 

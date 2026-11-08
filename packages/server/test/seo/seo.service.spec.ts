@@ -5,7 +5,13 @@ import { Content } from '../../src/content/shared/entities/content.entity';
 import { ContentTranslation } from '../../src/content/shared/entities/content-translations.entity';
 
 const translation = (locale: string, title: string): ContentTranslation =>
-  ({ id: `${locale}-t`, locale, title, bodyHtml: `<p>${title} 본문</p>`, bodyText: null }) as ContentTranslation;
+  ({
+    id: `${locale}-t`,
+    locale,
+    title,
+    bodyHtml: `<p>${title} 본문</p>`,
+    bodyText: null,
+  }) as ContentTranslation;
 
 const content = (overrides: Partial<Content> = {}): Content =>
   ({
@@ -42,7 +48,7 @@ describe('SeoService', () => {
       expect.objectContaining({
         where: expect.objectContaining({ slug: 'a', isPublished: true }),
         relations: { translations: true },
-      }),
+      })
     );
     expect(head).toContain('<title>한국어 제목 | Seoul Vibe</title>');
     expect(head).toContain('hreflang="en"');
@@ -77,11 +83,22 @@ describe('SeoService', () => {
   });
 
   it('sitemap은 홈·목록과 아티클별 존재하는 번역 URL을 포함한다', async () => {
-    repo.find.mockResolvedValue([content(), content({ slug: 'ko-only', translations: [translation('KO', '전용')] })]);
+    repo.find.mockResolvedValue([
+      content(),
+      content({ slug: 'ko-only', translations: [translation('KO', '전용')] }),
+    ]);
 
     const xml = await service.sitemap();
 
-    for (const path of ['/en', '/ko', '/en/articles', '/ko/articles', '/en/articles/a', '/ko/articles/a', '/ko/articles/ko-only']) {
+    for (const path of [
+      '/en',
+      '/ko',
+      '/en/articles',
+      '/ko/articles',
+      '/en/articles/a',
+      '/ko/articles/a',
+      '/ko/articles/ko-only',
+    ]) {
       expect(xml).toContain(`<loc>https://sv.test${path}</loc>`);
     }
     expect(xml).not.toContain('<loc>https://sv.test/en/articles/ko-only</loc>');
