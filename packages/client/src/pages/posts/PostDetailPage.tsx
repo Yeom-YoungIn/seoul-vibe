@@ -8,10 +8,12 @@ import Spinner from '../../components/ui/Spinner';
 import FeatureCover from '../../components/ui/FeatureCover';
 import Byline from '../../components/ui/Byline';
 import { PinIcon } from '../../components/ui/Icon';
+import { useLocalePath } from '../../hooks/useLanguage';
 
 const MapView = lazy(() => import('../../components/ui/MapView'));
 
 export default function PostDetailPage() {
+  const lp = useLocalePath();
   const { id } = useParams<{ id: string }>();
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -35,7 +37,7 @@ export default function PostDetailPage() {
     setDeleting(true);
     try {
       await postsApi.remove(post.id);
-      navigate('/feed');
+      navigate(lp('/feed'));
     } catch {
       setDeleting(false);
     }
@@ -52,7 +54,7 @@ export default function PostDetailPage() {
       <div className="page-loading">
         <div className="empty-block">
           <h2>Post not found.</h2>
-          <Link to="/feed" className="btn btn-primary btn-sm">
+          <Link to={lp('/feed')} className="btn btn-primary btn-sm">
             Back to feed
           </Link>
         </div>
@@ -80,7 +82,7 @@ export default function PostDetailPage() {
       </div>
 
       <div className="split-main surface-paper post-detail">
-        <Link to="/feed" className="back-link">
+        <Link to={lp('/feed')} className="back-link">
           Community Feed
         </Link>
 
@@ -113,7 +115,7 @@ export default function PostDetailPage() {
         {canDelete && (
           <div className="post-detail-actions">
             {isOwner && (
-              <Link to={`/posts/${post.id}/edit`} className="btn btn-ghost btn-sm">
+              <Link to={lp(`/posts/${post.id}/edit`)} className="btn btn-ghost btn-sm">
                 Edit
               </Link>
             )}

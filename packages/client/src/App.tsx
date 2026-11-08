@@ -1,11 +1,13 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { LanguageContext, useLanguageState } from './hooks/useLanguage';
 import { AuthProvider } from './hooks/useAuth';
-import MainLayout from './components/layouts/MainLayout';
+import LocaleLayout from './components/layouts/LocaleLayout';
 import RootLayout from './components/layouts/RootLayout';
 import AdminLayout from './components/layouts/AdminLayout';
 import PrivateRoute from './components/ui/PrivateRoute';
 import AdminRoute from './components/ui/AdminRoute';
+import RootRedirect from './components/ui/RootRedirect';
+import LegacyRedirect from './components/ui/LegacyRedirect';
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
 import VerifyEmailPage from './pages/auth/VerifyEmailPage';
@@ -35,18 +37,23 @@ function App() {
               <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
             </Route>
 
-            {/* Main pages — with nav */}
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/articles" element={<ArticleListPage />} />
-              <Route path="/articles/:slug" element={<ArticleDetailPage />} />
-              <Route path="/feed" element={<FeedPage />} />
-              <Route path="/posts/:id" element={<PostDetailPage />} />
+            <Route path="/" element={<RootRedirect />} />
+            <Route path="/articles/*" element={<LegacyRedirect />} />
+            <Route path="/feed" element={<LegacyRedirect />} />
+            <Route path="/posts/*" element={<LegacyRedirect />} />
+
+            {/* Main pages — with nav, language prefix (/en, /ko) */}
+            <Route path="/:lang" element={<LocaleLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="articles" element={<ArticleListPage />} />
+              <Route path="articles/:slug" element={<ArticleDetailPage />} />
+              <Route path="feed" element={<FeedPage />} />
+              <Route path="posts/:id" element={<PostDetailPage />} />
 
               {/* Protected — login required */}
               <Route element={<PrivateRoute />}>
-                <Route path="/posts/new" element={<PostFormPage mode="create" />} />
-                <Route path="/posts/:id/edit" element={<PostFormPage mode="edit" />} />
+                <Route path="posts/new" element={<PostFormPage mode="create" />} />
+                <Route path="posts/:id/edit" element={<PostFormPage mode="edit" />} />
               </Route>
             </Route>
 

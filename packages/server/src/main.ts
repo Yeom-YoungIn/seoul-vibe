@@ -6,8 +6,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { join } from 'path';
 import { AppModule } from './app.module';
+import { UPLOADS_ROOT } from './upload/uploads-root';
 import {
   AllExceptionsFilter,
   CommonSuccessResponseInterceptor,
@@ -22,7 +22,7 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   const corsOrigin = process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:5173'];
 
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/uploads' });
+  app.useStaticAssets(UPLOADS_ROOT, { prefix: '/uploads' });
 
   app.enableCors({
     origin: corsOrigin,

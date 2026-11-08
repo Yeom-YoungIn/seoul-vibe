@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import { Post } from '../../lib/api/posts';
 import { categoryLabel, formatDate, postTitle } from '../../lib/format';
 import Byline from './Byline';
+import { useLocalePath } from '../../hooks/useLanguage';
 
 export default function PostCard({ post }: { post: Post }) {
+  const lp = useLocalePath();
   return (
-    <Link to={`/posts/${post.id}`} className="post-card">
+    <Link to={lp(`/posts/${post.id}`)} className="post-card">
       <div className={`post-card-media ${post.images[0] ? '' : 'is-empty'}`}>
         {post.images[0] && <img src={post.images[0]} alt="" loading="lazy" />}
         <span className="label post-card-label">{categoryLabel(post.category)}</span>

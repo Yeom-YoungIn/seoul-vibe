@@ -7,7 +7,19 @@ export interface ArticleTranslation {
   bodyText: string | null;
 }
 
-export interface Article {
+export type SourceType = 'INSTAGRAM' | 'LINK';
+
+export interface ArticleSource {
+  sourceUrl: string | null;
+  sourceType: SourceType | null;
+  sourceTitle: string | null;
+  sourceDescription: string | null;
+  sourceSiteName: string | null;
+  sourceAuthor: string | null;
+  sourceImagePath: string | null;
+}
+
+export interface Article extends ArticleSource {
   id: string;
   slug: string;
   isPublished: boolean;

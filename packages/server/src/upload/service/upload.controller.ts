@@ -10,10 +10,11 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
-import { extname, join } from 'path';
+import { extname } from 'path';
 import { randomUUID } from 'crypto';
 import { Request } from 'express';
 import { JwtAuthGuard } from '@app/common';
+import { UPLOADS_ROOT } from '../uploads-root';
 
 const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 const ALLOWED_MIME_PREFIX = 'image/';
@@ -31,7 +32,7 @@ export class UploadController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: join(__dirname, '..', '..', '..', 'uploads'),
+        destination: UPLOADS_ROOT,
         filename: (_req, file, cb) => {
           const ext = extname(file.originalname).toLowerCase();
           cb(null, `${randomUUID()}${ext}`);

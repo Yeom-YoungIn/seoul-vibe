@@ -1,5 +1,5 @@
 # 목적 - 백엔드 서버의 비민감 운영 설정을 Kubernetes에서 주입하기 위해 추가됨
-# 설명 - 포트, 실행 환경, CORS, ORM 명명 전략 같은 일반 설정값을 ConfigMap으로 분리한다.
+# 설명 - 포트, 실행 환경, CORS, ORM 명명 전략, SEO 기준 URL·검색 노출 여부 같은 일반 설정값을 ConfigMap으로 분리한다.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,3 +10,5 @@ data:
   TYPEORM_SYNC: "false"
   DB_NAMING_STRATEGY: snake
   CORS_ORIGIN: https://seoul-vibe.example.com
+  SITE_URL: https://seoul-vibe.example.com
+  SEO_INDEXABLE: "false"

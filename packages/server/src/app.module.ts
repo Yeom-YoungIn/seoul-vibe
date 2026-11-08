@@ -8,6 +8,7 @@ import { ContentModule } from './content/content.module';
 import { PostModule } from './post/post.module';
 import { UserModule } from './user/user.module';
 import { UploadModule } from './upload/upload.module';
+import { SeoModule } from './seo/seo.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UploadModule } from './upload/upload.module';
     PostModule,
     UserModule,
     UploadModule,
+    SeoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

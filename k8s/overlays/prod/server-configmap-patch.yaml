@@ -1,8 +1,10 @@
 # 목적 - prod 환경의 백엔드 비민감 설정을 base ConfigMap에 주입하기 위해 추가됨
-# 설명 - 운영 CORS origin을 prod host로 분리해 dev 설정과 혼동되지 않게 한다.
+# 설명 - 운영 CORS origin과 SEO 기준 URL(SITE_URL)을 prod host로 분리하고, 검색 노출(SEO_INDEXABLE)은 prod에서만 켠다.
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: seoul-vibe-server-config
 data:
   CORS_ORIGIN: http://seoul-vibe.example.com
+  SITE_URL: http://seoul-vibe.example.com
+  SEO_INDEXABLE: 'true'

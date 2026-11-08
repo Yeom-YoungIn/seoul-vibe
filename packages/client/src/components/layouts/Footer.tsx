@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
+import { useLocalePath } from '../../hooks/useLanguage';
 
 export default function Footer() {
+  const lp = useLocalePath();
   return (
     <footer className="site-footer">
-      <Link to="/" className="logo logo-lg">
+      <Link to={lp('/')} className="logo logo-lg">
         seoul vibe
       </Link>
       <p className="site-footer-line">
@@ -11,9 +13,9 @@ export default function Footer() {
         here.
       </p>
       <nav className="site-footer-nav">
-        <Link to="/articles">Discover</Link>
-        <Link to="/feed">Feed</Link>
-        <Link to="/posts/new">Share a spot</Link>
+        <Link to={lp('/articles')}>Discover</Link>
+        <Link to={lp('/feed')}>Feed</Link>
+        <Link to={lp('/posts/new')}>Share a spot</Link>
       </nav>
       <p className="site-footer-copy">© {new Date().getFullYear()} Seoul Vibe</p>
     </footer>

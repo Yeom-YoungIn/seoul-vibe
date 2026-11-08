@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useHeaderTone } from '../../hooks/useHeaderTone';
 import Spinner from '../../components/ui/Spinner';
 import PostCard from '../../components/ui/PostCard';
+import { useLocalePath } from '../../hooks/useLanguage';
 
 const PAGE_SIZE = 20;
 
@@ -16,6 +17,7 @@ const CATEGORIES: { value: PostCategory | ''; label: string }[] = [
 ];
 
 export default function FeedPage() {
+  const lp = useLocalePath();
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -70,7 +72,7 @@ export default function FeedPage() {
               </button>
             ))}
           </div>
-          <Link to={user ? '/posts/new' : '/auth/login'} className="btn btn-lime">
+          <Link to={user ? lp('/posts/new') : '/auth/login'} className="btn btn-lime">
             Share a spot
           </Link>
         </div>

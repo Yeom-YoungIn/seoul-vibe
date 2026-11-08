@@ -10,6 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { LANGUAGE, Language } from '@app/common';
+import { ContentSourceDto } from './create-content.dto';
 
 export class UpdateContentTranslationDto {
   @ApiPropertyOptional({ enum: LANGUAGE })
@@ -34,7 +35,7 @@ export class UpdateContentTranslationDto {
   bodyText?: string;
 }
 
-export class UpdateContentDto {
+export class UpdateContentDto extends ContentSourceDto {
   @ApiPropertyOptional({ minLength: 2, maxLength: 255 })
   @IsOptional()
   @IsString()

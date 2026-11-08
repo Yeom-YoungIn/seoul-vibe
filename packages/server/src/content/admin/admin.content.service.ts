@@ -4,9 +4,18 @@ import { Repository } from 'typeorm';
 import { Content } from '../shared/entities/content.entity';
 import { ContentTranslation } from '../shared/entities/content-translations.entity';
 import { ContentNotFoundError } from '../shared/errors/content.errors';
-import { CreateContentDto } from './dto/request/create-content.dto';
+import { ContentSourceDto, CreateContentDto } from './dto/request/create-content.dto';
+import { normalizeSourceUrl } from './source/source-url';
 import { ListAdminContentDto } from './dto/request/list-admin-content.dto';
 import { UpdateContentDto } from './dto/request/update-content.dto';
+
+const SOURCE_DETAIL_KEYS = [
+  'sourceTitle',
+  'sourceDescription',
+  'sourceSiteName',
+  'sourceAuthor',
+  'sourceImagePath',
+] as const;
 
 @Injectable()
 export class AdminContentService {
@@ -27,6 +36,7 @@ export class AdminContentService {
     }
 
     const content = this.contentRepository.create({ slug: dto.slug });
+    this.applySource(content, dto);
     content.translations = dto.translations.map((t) =>
       this.translationRepository.create({
         locale: t.locale,
@@ -72,6 +82,8 @@ export class AdminContentService {
       content.slug = dto.slug;
     }
 
+    this.applySource(content, dto);
+
     if (dto.translations?.length) {
       for (const t of dto.translations) {
         if (!t.locale) continue;
@@ -94,6 +106,32 @@ export class AdminContentService {
     }
 
     return this.contentRepository.save(content);
+  }
+
+  /** sourceUrl: undefined → 유지, null/빈 문자열 → 전체 제거, 값 → 정규화 후 sourceType 재계산 */
+  private applySource(content: Content, dto: ContentSourceDto): void {
+    if (dto.sourceUrl === null || dto.sourceUrl?.trim() === '') {
+      this.clearSource(content);
+      return;
+    }
+
+    if (dto.sourceUrl !== undefined) {
+      const normalized = normalizeSourceUrl(dto.sourceUrl);
+      content.sourceUrl = normalized.url;
+      content.sourceType = normalized.type;
+    }
+
+    for (const key of SOURCE_DETAIL_KEYS) {
+      if (dto[key] !== undefined) content[key] = dto[key];
+    }
+
+    if (!content.sourceUrl) this.clearSource(content);
+  }
+
+  private clearSource(content: Content): void {
+    content.sourceUrl = null;
+    content.sourceType = null;
+    for (const key of SOURCE_DETAIL_KEYS) content[key] = null;
   }
 
   async remove(id: string): Promise<void> {
