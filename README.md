@@ -22,3 +22,7 @@ Seoul Vibe는 서울의 로컬 장소를 소개하는 콘텐츠와 사용자 피
 - [서버 앱](./packages/server)
 - [AWS EKS Terraform](./terraform/aws/eks/README.md)
 - [GCP GKE Terraform](./terraform/gcp/gke/README.md)
+
+## 무료 배포
+
+카드 없이 Cloudflare Pages + Render Free + Neon Free + Supabase Storage로 배포하는 설정과 수동 절차는 [무료 배포 가이드](docs/deployment/free-render-neon-cloudflare.md)를 참고하세요. 기존 GCP/AWS 및 로컬 개발 구성과 별도로 사용할 수 있습니다.

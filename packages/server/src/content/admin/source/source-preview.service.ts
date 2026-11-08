@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+/**
+ * 목적 - 외부 원문의 메타와 썸네일을 안전하게 수집한다.
+ * 설명 - 썸네일은 공유 저장소에 보관하고 저장 실패는 미리보기를 막지 않는다.
+ */
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
-import { promises as fs } from 'fs';
-import { join } from 'path';
-import { UPLOADS_ROOT } from '../../../upload/uploads-root';
+import { STORAGE_SERVICE, StorageService } from '../../../upload/storage/storage.service';
 import { normalizeSourceUrl, SourceType } from './source-url';
 import { safeFetch, SourceFetchFailedError } from './safe-fetch';
 import { parseSourceMeta, SourceMeta } from './source-meta.parser';
@@ -38,7 +40,10 @@ const EMPTY_META: SourceMeta = {
 export class SourcePreviewService {
   private readonly userAgent: string;
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    @Inject(STORAGE_SERVICE) private readonly storage: StorageService
+  ) {
     const siteUrl = configService.get<string>('SITE_URL') ?? 'http://localhost:5173';
     this.userAgent = `SeoulVibeBot/1.0 (+${siteUrl})`;
   }
@@ -80,11 +85,7 @@ export class SourcePreviewService {
       const ext = IMAGE_EXT[res.contentType];
       if (!ext) return null;
 
-      const dir = join(UPLOADS_ROOT, 'sources');
-      const filename = `${randomUUID()}.${ext}`;
-      await fs.mkdir(dir, { recursive: true });
-      await fs.writeFile(join(dir, filename), res.body);
-      return `/uploads/sources/${filename}`;
+      return await this.storage.put(`sources/${randomUUID()}.${ext}`, res.body, res.contentType);
     } catch {
       // 썸네일은 부가 정보라 어떤 실패(차단 포함)도 미리보기 전체를 막지 않는다
       return null;
