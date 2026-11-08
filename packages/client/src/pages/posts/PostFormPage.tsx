@@ -5,6 +5,7 @@ import { uploadApi } from '../../lib/api/upload';
 import { getApiErrorMessage } from '../../lib/api/error';
 import { useHeaderTone } from '../../hooks/useHeaderTone';
 import { CloseIcon } from '../../components/ui/Icon';
+import { useLocalePath } from '../../hooks/useLanguage';
 
 const LocationPicker = lazy(() => import('../../components/ui/LocationPicker'));
 
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export default function PostFormPage({ mode }: Props) {
+  const lp = useLocalePath();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -76,10 +78,10 @@ export default function PostFormPage({ mode }: Props) {
     try {
       if (mode === 'create') {
         const post = await postsApi.create(form);
-        navigate(`/posts/${post.id}`);
+        navigate(lp(`/posts/${post.id}`));
       } else if (id) {
         await postsApi.update(id, form);
-        navigate(`/posts/${id}`);
+        navigate(lp(`/posts/${id}`));
       }
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to save post.'));

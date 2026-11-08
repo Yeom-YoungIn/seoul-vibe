@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { articlesApi, ArticleListItem } from '../lib/api/articles';
 import { postsApi, Post } from '../lib/api/posts';
 import { categoryLabel, formatDate, postTitle } from '../lib/format';
-import { useLanguage } from '../hooks/useLanguage';
+import { useLanguage, useLocalePath } from '../hooks/useLanguage';
 import { useHeaderTone } from '../hooks/useHeaderTone';
 import Spinner from '../components/ui/Spinner';
 import PostCard from '../components/ui/PostCard';
@@ -12,6 +12,7 @@ import Byline from '../components/ui/Byline';
 import { ArrowIcon } from '../components/ui/Icon';
 
 export default function HomePage() {
+  const lp = useLocalePath();
   const { language } = useLanguage();
   const [articles, setArticles] = useState<ArticleListItem[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -44,7 +45,7 @@ export default function HomePage() {
         <div className="split-side">
           {featured ? (
             <FeatureCover
-              to={`/posts/${featured.id}`}
+              to={lp(`/posts/${featured.id}`)}
               image={featured.images[0]}
               label={categoryLabel(featured.category)}
               title={postTitle(featured.content)}
@@ -77,12 +78,12 @@ export default function HomePage() {
             <div className="empty-block">
               <h2>No posts yet.</h2>
               <p>Be the first to share a spot in Seoul.</p>
-              <Link to="/posts/new" className="btn btn-primary">
+              <Link to={lp('/posts/new')} className="btn btn-primary">
                 Share a spot
               </Link>
             </div>
           )}
-          <Link to="/feed" className="more-link">
+          <Link to={lp('/feed')} className="more-link">
             Community feed <ArrowIcon />
           </Link>
         </div>
@@ -95,7 +96,7 @@ export default function HomePage() {
             {moreArticles.length > 0 ? (
               <div className="stagger">
                 {moreArticles.map((a) => (
-                  <Link key={a.id} to={`/articles/${a.slug}`} className="article-card">
+                  <Link key={a.id} to={lp(`/articles/${a.slug}`)} className="article-card">
                     <span className="label">Guide</span>
                     <h3>{a.title}</h3>
                     <time>{formatDate(a.createdAt)}</time>
@@ -105,13 +106,13 @@ export default function HomePage() {
             ) : (
               <p className="muted">More guides are on the way.</p>
             )}
-            <Link to="/articles" className="more-link">
+            <Link to={lp('/articles')} className="more-link">
               All guides <ArrowIcon />
             </Link>
           </div>
           <div className="split-side">
             <FeatureCover
-              to={`/articles/${leadArticle.slug}`}
+              to={lp(`/articles/${leadArticle.slug}`)}
               label="Guide"
               title={leadArticle.title}
               date={formatDate(leadArticle.createdAt)}

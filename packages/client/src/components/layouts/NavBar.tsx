@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { useLanguage } from '../../hooks/useLanguage';
+import { useLanguage, useLocalePath } from '../../hooks/useLanguage';
 import { HeaderTone } from '../../hooks/useHeaderTone';
 import { CloseIcon, MenuIcon } from '../ui/Icon';
 
 export default function NavBar({ tone }: { tone: HeaderTone }) {
+  const lp = useLocalePath();
   const { user, isAdmin, logout } = useAuth();
   const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ export default function NavBar({ tone }: { tone: HeaderTone }) {
 
   return (
     <header className={`site-header tone-${tone}`}>
-      <Link to="/" className="logo">
+      <Link to={lp('/')} className="logo">
         seoul vibe
       </Link>
       <button
@@ -50,13 +51,13 @@ export default function NavBar({ tone }: { tone: HeaderTone }) {
 
       {open && (
         <div id="site-menu" className="site-menu">
-          <Link to="/" className="logo">
+          <Link to={lp('/')} className="logo">
             seoul vibe
           </Link>
           <nav className="site-menu-nav">
-            <NavLink to="/articles">Discover</NavLink>
-            <NavLink to="/feed">Feed</NavLink>
-            {user && <NavLink to="/posts/new">Share a spot</NavLink>}
+            <NavLink to={lp('/articles')}>Discover</NavLink>
+            <NavLink to={lp('/feed')}>Feed</NavLink>
+            {user && <NavLink to={lp('/posts/new')}>Share a spot</NavLink>}
             {isAdmin && <NavLink to="/admin">Admin</NavLink>}
           </nav>
           <div className="site-menu-foot">

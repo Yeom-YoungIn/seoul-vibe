@@ -3,10 +3,11 @@ import { Link, useParams } from 'react-router-dom';
 import { articlesApi, Article } from '../../lib/api/articles';
 import { formatDate } from '../../lib/format';
 import Spinner from '../../components/ui/Spinner';
-import { useLanguage } from '../../hooks/useLanguage';
+import { useLanguage, useLocalePath } from '../../hooks/useLanguage';
 import { useHeaderTone } from '../../hooks/useHeaderTone';
 
 export default function ArticleDetailPage() {
+  const lp = useLocalePath();
   const { slug } = useParams<{ slug: string }>();
   const { language } = useLanguage();
   const [article, setArticle] = useState<Article | null>(null);
@@ -35,7 +36,7 @@ export default function ArticleDetailPage() {
       <div className="page-loading">
         <div className="empty-block">
           <h2>Article not found.</h2>
-          <Link to="/articles" className="btn btn-primary btn-sm">
+          <Link to={lp('/articles')} className="btn btn-primary btn-sm">
             Back to guides
           </Link>
         </div>
@@ -48,7 +49,7 @@ export default function ArticleDetailPage() {
   return (
     <article>
       <header className="article-hero">
-        <Link to="/articles" className="label article-hero-back">
+        <Link to={lp('/articles')} className="label article-hero-back">
           Seoul Vibes
         </Link>
         <h1>{translation?.title ?? article.slug}</h1>

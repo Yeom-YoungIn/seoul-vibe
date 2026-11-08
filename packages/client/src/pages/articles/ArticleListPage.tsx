@@ -4,12 +4,13 @@ import { articlesApi, ArticleListItem } from '../../lib/api/articles';
 import { formatDate } from '../../lib/format';
 import Spinner from '../../components/ui/Spinner';
 import { ArrowIcon } from '../../components/ui/Icon';
-import { useLanguage } from '../../hooks/useLanguage';
+import { useLanguage, useLocalePath } from '../../hooks/useLanguage';
 import { useHeaderTone } from '../../hooks/useHeaderTone';
 
 const PAGE_SIZE = 12;
 
 export default function ArticleListPage() {
+  const lp = useLocalePath();
   const { language } = useLanguage();
   const [articles, setArticles] = useState<ArticleListItem[]>([]);
   const [count, setCount] = useState(0);
@@ -72,7 +73,7 @@ export default function ArticleListPage() {
           <ol className="article-rows">
             {articles.map((a) => (
               <li key={a.id}>
-                <Link to={`/articles/${a.slug}`} className="article-row">
+                <Link to={lp(`/articles/${a.slug}`)} className="article-row">
                   <time>{formatDate(a.createdAt)}</time>
                   <h2>{a.title}</h2>
                   <ArrowIcon size={28} />
