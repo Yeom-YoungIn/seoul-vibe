@@ -19,6 +19,9 @@ import { AdminContentService } from './admin.content.service';
 import { CreateContentDto } from './dto/request/create-content.dto';
 import { ListAdminContentDto } from './dto/request/list-admin-content.dto';
 import { UpdateContentDto } from './dto/request/update-content.dto';
+import { SourcePreviewDto } from './dto/request/source-preview.dto';
+import { SourcePreviewResponseDto } from './dto/response/source-preview.response.dto';
+import { SourcePreviewService } from './source/source-preview.service';
 import {
   AdminContentDetailResponseDto,
   AdminContentListAndCountResponseDto,
@@ -30,7 +33,18 @@ import {
 @Roles(UserRole.ADMIN)
 @Controller('content/admin')
 export class AdminContentController {
-  constructor(private readonly adminContentService: AdminContentService) {}
+  constructor(
+    private readonly adminContentService: AdminContentService,
+    private readonly sourcePreviewService: SourcePreviewService,
+  ) {}
+
+  @Post('source-preview')
+  @HttpCode(HttpStatus.OK)
+  @TransformResponse(SourcePreviewResponseDto)
+  @ApiOperation({ summary: '원문 URL 미리보기 (정규화 + OG 메타 수집)' })
+  previewSource(@Body() dto: SourcePreviewDto) {
+    return this.sourcePreviewService.preview(dto.url);
+  }
 
   @Post()
   @TransformResponse(AdminContentDetailResponseDto)

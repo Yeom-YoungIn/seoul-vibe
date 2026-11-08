@@ -1,6 +1,7 @@
 import { InvalidSourceUrlError } from '../../shared/errors/content.errors';
+import { SourceType } from '../../shared/types/source-type';
 
-export type SourceType = 'INSTAGRAM' | 'LINK';
+export type { SourceType };
 
 export interface NormalizedSource {
   url: string;

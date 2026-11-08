@@ -34,7 +34,45 @@ export class CreateContentTranslationDto {
   bodyText?: string;
 }
 
-export class CreateContentDto {
+export class ContentSourceDto {
+  @ApiPropertyOptional({ description: '원문 URL (null이면 출처 제거)', maxLength: 2048, nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  sourceUrl?: string | null;
+
+  @ApiPropertyOptional({ description: '원문 제목', maxLength: 300, nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  sourceTitle?: string | null;
+
+  @ApiPropertyOptional({ description: '원문 설명', maxLength: 500, nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  sourceDescription?: string | null;
+
+  @ApiPropertyOptional({ description: '원문 사이트명', maxLength: 100, nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  sourceSiteName?: string | null;
+
+  @ApiPropertyOptional({ description: '원문 작성자', maxLength: 100, nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  sourceAuthor?: string | null;
+
+  @ApiPropertyOptional({ description: '원문 썸네일 경로', maxLength: 500, nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  sourceImagePath?: string | null;
+}
+
+export class CreateContentDto extends ContentSourceDto {
   @ApiProperty({ description: 'URL 슬러그', example: 'hidden-coffee-spots-seoul' })
   @IsString()
   @IsNotEmpty()

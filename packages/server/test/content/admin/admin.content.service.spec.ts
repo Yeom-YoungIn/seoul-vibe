@@ -4,7 +4,10 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Content } from '../../../src/content/shared/entities/content.entity';
 import { ContentTranslation } from '../../../src/content/shared/entities/content-translations.entity';
-import { ContentNotFoundError } from '../../../src/content/shared/errors/content.errors';
+import {
+  ContentNotFoundError,
+  InvalidSourceUrlError,
+} from '../../../src/content/shared/errors/content.errors';
 import { AdminContentService } from '../../../src/content/admin/admin.content.service';
 
 const mockContentRepository = () => ({
@@ -217,6 +220,98 @@ describe('AdminContentService', () => {
       await service.unpublish('content-uuid');
 
       expect(contentRepo.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('source', () => {
+    const sourceFields = {
+      sourceUrl: 'https://blog.naver.com/a/1',
+      sourceType: 'LINK',
+      sourceTitle: '원문 제목',
+      sourceDescription: '원문 설명',
+      sourceSiteName: '네이버 블로그',
+      sourceAuthor: '작성자',
+      sourceImagePath: '/uploads/sources/x.jpg',
+    } as const;
+
+    beforeEach(() => {
+      contentRepo.create.mockImplementation((input) => ({ ...(input as object), translations: [] }) as unknown as Content);
+      contentRepo.save.mockImplementation(async (content) => content as Content);
+      translationRepo.create.mockImplementation((input) => input as ContentTranslation);
+    });
+
+    it('create 시 sourceUrl을 정규화하고 sourceType을 설정한다', async () => {
+      contentRepo.findOne.mockResolvedValue(null);
+
+      await service.create({
+        slug: 'insta',
+        translations: [{ locale: 'KO', title: '제목' }],
+        sourceUrl: 'https://www.instagram.com/p/DcOEG9qkwW6/?img_index=2',
+        sourceAuthor: '@seoul',
+      });
+
+      const saved = contentRepo.save.mock.calls[0][0] as Content;
+      expect(saved.sourceUrl).toBe('https://www.instagram.com/p/DcOEG9qkwW6/');
+      expect(saved.sourceType).toBe('INSTAGRAM');
+      expect(saved.sourceAuthor).toBe('@seoul');
+    });
+
+    it('create 시 sourceUrl이 없으면 source 필드를 비워둔다', async () => {
+      contentRepo.findOne.mockResolvedValue(null);
+
+      await service.create({ slug: 'plain', translations: [{ locale: 'KO', title: '제목' }] });
+
+      const saved = contentRepo.save.mock.calls[0][0] as Content;
+      expect(saved.sourceUrl ?? null).toBeNull();
+      expect(saved.sourceType ?? null).toBeNull();
+    });
+
+    it('update 시 sourceUrl이 null이면 모든 source 필드를 비운다', async () => {
+      contentRepo.findOne.mockResolvedValue(buildContent({ ...sourceFields }));
+
+      const result = await service.update('content-uuid', { sourceUrl: null });
+
+      expect(result.sourceUrl).toBeNull();
+      expect(result.sourceType).toBeNull();
+      expect(result.sourceTitle).toBeNull();
+      expect(result.sourceDescription).toBeNull();
+      expect(result.sourceSiteName).toBeNull();
+      expect(result.sourceAuthor).toBeNull();
+      expect(result.sourceImagePath).toBeNull();
+    });
+
+    it('update 시 sourceUrl이 없으면 기존 source 필드를 유지한다', async () => {
+      contentRepo.findOne.mockResolvedValue(buildContent({ ...sourceFields }));
+
+      const result = await service.update('content-uuid', { sourceTitle: '바뀐 제목' });
+
+      expect(result.sourceUrl).toBe(sourceFields.sourceUrl);
+      expect(result.sourceType).toBe('LINK');
+      expect(result.sourceTitle).toBe('바뀐 제목');
+      expect(result.sourceImagePath).toBe(sourceFields.sourceImagePath);
+    });
+
+    it('update 시 sourceUrl만 바뀌면 sourceType을 다시 계산한다', async () => {
+      contentRepo.findOne.mockResolvedValue(buildContent({ ...sourceFields }));
+
+      const result = await service.update('content-uuid', {
+        sourceUrl: 'https://instagram.com/reel/AbC/',
+      });
+
+      expect(result.sourceUrl).toBe('https://www.instagram.com/reel/AbC/');
+      expect(result.sourceType).toBe('INSTAGRAM');
+    });
+
+    it('잘못된 sourceUrl이면 InvalidSourceUrlError', async () => {
+      contentRepo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.create({
+          slug: 'bad',
+          translations: [{ locale: 'KO', title: '제목' }],
+          sourceUrl: 'javascript:alert(1)',
+        }),
+      ).rejects.toBeInstanceOf(InvalidSourceUrlError);
     });
   });
 });
