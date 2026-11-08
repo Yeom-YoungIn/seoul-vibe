@@ -5,21 +5,55 @@ import {
   CreateArticlePayload,
   UpdateArticlePayload,
 } from '../../lib/api/admin';
+import { ArticleSource } from '../../lib/api/articles';
 import { getApiErrorMessage } from '../../lib/api/error';
+import { assetUrl } from '../../lib/axios';
 
 const PAGE_SIZE = 20;
 const LOCALES = ['EN', 'KO'] as const;
 
 type FormMode = 'create' | 'edit';
 
+type SourceForm = { [K in keyof ArticleSource]: string };
+
 interface ArticleFormState {
   slug: string;
   translations: { locale: string; title: string; bodyHtml: string }[];
+  source: SourceForm;
 }
+
+const emptySource = (): SourceForm => ({
+  sourceUrl: '',
+  sourceType: '',
+  sourceTitle: '',
+  sourceDescription: '',
+  sourceSiteName: '',
+  sourceAuthor: '',
+  sourceImagePath: '',
+});
+
+const toSourceForm = (source: Partial<ArticleSource>): SourceForm => {
+  const form = emptySource();
+  for (const key of Object.keys(form) as (keyof SourceForm)[]) form[key] = source[key] ?? '';
+  return form;
+};
+
+/** 빈 URL이면 출처 제거(null), 나머지 빈 값도 null로 보낸다 */
+const toSourcePayload = (source: SourceForm) => {
+  if (!source.sourceUrl.trim()) return { sourceUrl: null };
+  return Object.fromEntries(
+    Object.entries(source)
+      .filter(([key]) => key !== 'sourceType')
+      .map(([key, value]) => [key, value.trim() ? value.trim() : null]),
+  );
+};
+
+const BODY_PLACEHOLDER = '원문을 복사하지 말고, 직접 쓴 추천 이유·위치·팁을 3~6문장으로 적어주세요.';
 
 const emptyForm = (): ArticleFormState => ({
   slug: '',
   translations: [{ locale: 'EN', title: '', bodyHtml: '' }],
+  source: emptySource(),
 });
 
 export default function AdminArticlesPage() {
@@ -33,6 +67,8 @@ export default function AdminArticlesPage() {
   const [form, setForm] = useState<ArticleFormState>(emptyForm());
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
+  const [previewing, setPreviewing] = useState(false);
+  const [previewError, setPreviewError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -52,6 +88,7 @@ export default function AdminArticlesPage() {
   const openCreate = () => {
     setForm(emptyForm());
     setFormError('');
+    setPreviewError('');
     setModal({ mode: 'create' });
   };
 
@@ -64,8 +101,10 @@ export default function AdminArticlesPage() {
         title: t.title,
         bodyHtml: t.bodyHtml ?? '',
       })),
+      source: toSourceForm(detail),
     });
     setFormError('');
+    setPreviewError('');
     setModal({ mode: 'edit', id: article.id });
   };
 
@@ -76,6 +115,7 @@ export default function AdminArticlesPage() {
     try {
       if (modal?.mode === 'create') {
         const payload: CreateArticlePayload = {
+          ...toSourcePayload(form.source),
           slug: form.slug,
           translations: form.translations.map((t) => ({
             locale: t.locale,
@@ -86,6 +126,7 @@ export default function AdminArticlesPage() {
         await adminArticlesApi.create(payload);
       } else if (modal?.id) {
         const payload: UpdateArticlePayload = {
+          ...toSourcePayload(form.source),
           slug: form.slug,
           translations: form.translations.map((t) => ({
             locale: t.locale,
@@ -124,6 +165,28 @@ export default function AdminArticlesPage() {
       ts[idx] = { ...ts[idx], [field]: value };
       return { ...f, translations: ts };
     });
+  };
+
+  const setSource = (field: keyof SourceForm, value: string) => {
+    setForm((f) => ({ ...f, source: { ...f.source, [field]: value } }));
+  };
+
+  const handlePreviewSource = async () => {
+    if (!form.source.sourceUrl.trim()) return;
+    setPreviewing(true);
+    setPreviewError('');
+    try {
+      const preview = await adminArticlesApi.previewSource(form.source.sourceUrl.trim());
+      // 관리자가 이미 입력한 작성자는 덮어쓰지 않는다
+      setForm((f) => ({
+        ...f,
+        source: { ...toSourceForm(preview), sourceAuthor: preview.sourceAuthor ?? f.source.sourceAuthor },
+      }));
+    } catch (err) {
+      setPreviewError(getApiErrorMessage(err, 'Failed to load the source.'));
+    } finally {
+      setPreviewing(false);
+    }
   };
 
   const addTranslation = () => {
@@ -252,6 +315,96 @@ export default function AdminArticlesPage() {
                 />
               </label>
 
+              <fieldset className="source-fieldset">
+                <legend className="form-label">Original source (optional)</legend>
+                <div className="source-url-row">
+                  <input
+                    className="form-input"
+                    type="url"
+                    value={form.source.sourceUrl}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        // URL을 직접 바꾸면 이전 미리보기 유형은 더 이상 유효하지 않다
+                        source: { ...f.source, sourceUrl: e.target.value, sourceType: '' },
+                      }))
+                    }
+                    placeholder="https://www.instagram.com/p/… or blog post URL"
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={handlePreviewSource}
+                    disabled={previewing || !form.source.sourceUrl.trim()}
+                  >
+                    {previewing ? 'Loading…' : 'Fetch'}
+                  </button>
+                </div>
+                {previewError && <p className="auth-error">{previewError}</p>}
+
+                {form.source.sourceUrl.trim() && (
+                  <>
+                    {form.source.sourceType === 'INSTAGRAM' ? (
+                      <p className="source-hint">
+                        인스타그램 공식 임베드로 표시됩니다. 작성자 핸들(@...)을 입력하세요.
+                      </p>
+                    ) : (
+                      <>
+                        {form.source.sourceImagePath && (
+                          <div className="source-thumb">
+                            <img src={assetUrl(form.source.sourceImagePath)} alt="" />
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-sm"
+                              onClick={() => setSource('sourceImagePath', '')}
+                            >
+                              Remove image
+                            </button>
+                          </div>
+                        )}
+                        <input
+                          className="form-input"
+                          placeholder="Source title"
+                          value={form.source.sourceTitle}
+                          onChange={(e) => setSource('sourceTitle', e.target.value)}
+                          maxLength={300}
+                        />
+                        <input
+                          className="form-input"
+                          placeholder="Source description"
+                          value={form.source.sourceDescription}
+                          onChange={(e) => setSource('sourceDescription', e.target.value)}
+                          maxLength={500}
+                        />
+                      </>
+                    )}
+                    <div className="source-meta-row">
+                      <input
+                        className={`form-input${form.source.sourceType === 'INSTAGRAM' ? ' is-emphasis' : ''}`}
+                        placeholder="Author (@handle)"
+                        value={form.source.sourceAuthor}
+                        onChange={(e) => setSource('sourceAuthor', e.target.value)}
+                        maxLength={100}
+                      />
+                      <input
+                        className="form-input"
+                        placeholder="Site name"
+                        value={form.source.sourceSiteName}
+                        onChange={(e) => setSource('sourceSiteName', e.target.value)}
+                        maxLength={100}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm source-clear"
+                      onClick={() => setForm((f) => ({ ...f, source: emptySource() }))}
+                    >
+                      Remove source
+                    </button>
+                  </>
+                )}
+              </fieldset>
+
               <div className="modal-translations">
                 {form.translations.map((t, i) => (
                   <div key={i} className="translation-block">
@@ -286,7 +439,7 @@ export default function AdminArticlesPage() {
                     />
                     <textarea
                       className="form-textarea"
-                      placeholder="Body HTML"
+                      placeholder={BODY_PLACEHOLDER}
                       value={t.bodyHtml}
                       onChange={(e) => setTranslation(i, 'bodyHtml', e.target.value)}
                       rows={8}

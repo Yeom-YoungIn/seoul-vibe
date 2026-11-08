@@ -1,5 +1,5 @@
 import { api } from '../axios';
-import { Article } from './articles';
+import { Article, ArticleSource } from './articles';
 import { Post } from './posts';
 
 const inflightRequests = new Map<string, Promise<unknown>>();
@@ -65,12 +65,14 @@ export interface AdminPost extends Post {
   isHidden: boolean;
 }
 
-export interface CreateArticlePayload {
+export type ArticleSourcePayload = Partial<Omit<ArticleSource, 'sourceType'>>;
+
+export interface CreateArticlePayload extends ArticleSourcePayload {
   slug: string;
   translations: { locale: string; title: string; bodyHtml?: string; bodyText?: string }[];
 }
 
-export interface UpdateArticlePayload {
+export interface UpdateArticlePayload extends ArticleSourcePayload {
   slug?: string;
   translations?: { locale: string; title?: string; bodyHtml?: string; bodyText?: string }[];
 }
@@ -117,6 +119,11 @@ export const adminArticlesApi = {
     api.patch<{ data: AdminArticle }>(`/content/admin/${id}/unpublish`).then((r) => r.data.data),
 
   remove: (id: string) => api.delete(`/content/admin/${id}`),
+
+  previewSource: (url: string) =>
+    api
+      .post<{ data: ArticleSource }>('/content/admin/source-preview', { url })
+      .then((r) => r.data.data),
 };
 
 // ── Posts ──────────────────────────────────────

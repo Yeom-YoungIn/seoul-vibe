@@ -2,6 +2,10 @@ import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
+/** 서버가 돌려준 상대 경로(/uploads/...)를 API 호스트 기준 URL로 바꾼다 */
+export const assetUrl = (path: string): string =>
+  /^https?:\/\//.test(path) ? path : `${BASE_URL.replace(/\/$/, '')}${path}`;
+
 export const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
