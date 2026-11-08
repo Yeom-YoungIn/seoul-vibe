@@ -183,7 +183,9 @@ export default function AdminArticlesPage() {
         ...f,
         source: {
           ...toSourceForm(preview),
-          sourceAuthor: f.source.sourceAuthor.trim() ? f.source.sourceAuthor : (preview.sourceAuthor ?? ''),
+          sourceAuthor: f.source.sourceAuthor.trim()
+            ? f.source.sourceAuthor
+            : (preview.sourceAuthor ?? ''),
         },
       }));
     } catch (err) {

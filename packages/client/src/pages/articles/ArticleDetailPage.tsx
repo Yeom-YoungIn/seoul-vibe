@@ -6,12 +6,12 @@ import Spinner from '../../components/ui/Spinner';
 import { useLanguage, useLocalePath } from '../../hooks/useLanguage';
 import { localePath } from '../../lib/locale';
 import ArticleSource from '../../components/ui/ArticleSource';
+import { useHeaderTone } from '../../hooks/useHeaderTone';
 
 const MISSING_COPY = {
   EN: { text: 'Not available in English yet.', other: 'Read it in Korean →' },
   KO: { text: '아직 한국어 버전이 없습니다.', other: '영어로 보기 →' },
 };
-import { useHeaderTone } from '../../hooks/useHeaderTone';
 
 export default function ArticleDetailPage() {
   const lp = useLocalePath();
@@ -20,18 +20,28 @@ export default function ArticleDetailPage() {
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  // 현재 언어로 404일 때 다른 언어 번역이 실제로 있는지 (있을 때만 그쪽으로 안내)
+  const [otherExists, setOtherExists] = useState(false);
+  const other = language === 'EN' ? 'KO' : 'EN';
   useHeaderTone(article ? 'night' : 'dark');
 
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
     setError(false);
+    setOtherExists(false);
     articlesApi
       .getDetail(slug, language)
       .then(setArticle)
-      .catch(() => setError(true))
+      .catch(() =>
+        articlesApi
+          .getDetail(slug, other)
+          .then(() => setOtherExists(true))
+          .catch(() => setOtherExists(false))
+          .finally(() => setError(true)),
+      )
       .finally(() => setLoading(false));
-  }, [slug, language]);
+  }, [slug, language, other]);
 
   useEffect(() => {
     const title = article?.translations[0]?.title;
@@ -46,14 +56,13 @@ export default function ArticleDetailPage() {
     );
 
   if (error || !article) {
-    // 상세 API는 해당 언어 번역이 없을 때도 404이므로 반대 언어로 가는 길을 함께 준다
+    // 상세 API는 해당 언어 번역이 없을 때도 404이므로, 다른 언어 번역이 있으면 그쪽으로 안내한다
     const missing = MISSING_COPY[language];
-    const other = language === 'EN' ? 'KO' : 'EN';
     return (
       <div className="page-loading">
         <div className="empty-block">
-          <h2>{missing.text}</h2>
-          {slug && (
+          <h2>{otherExists ? missing.text : 'Article not found.'}</h2>
+          {slug && otherExists && (
             <Link to={localePath(other, `/articles/${slug}`)} className="btn btn-primary btn-sm">
               {missing.other}
             </Link>
