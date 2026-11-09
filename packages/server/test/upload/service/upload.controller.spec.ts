@@ -21,6 +21,12 @@ describe('업로드 컨트롤러', () => {
       'image/jpeg'
     );
   });
+  it('클라이언트가 보낸 mimetype 대신 확장자의 Content-Type으로 저장한다', async () => {
+    const put = jest.fn().mockResolvedValue('/uploads/file.png');
+    const svg = { ...file, originalname: 'x.png', mimetype: 'image/svg+xml' };
+    await new UploadController({ put }).uploadFile(svg, req);
+    expect(put).toHaveBeenCalledWith(expect.any(String), file.buffer, 'image/png');
+  });
   it('S3 절대 URL은 호스트를 붙이지 않고 반환한다', async () => {
     const controller = new UploadController({
       put: jest.fn().mockResolvedValue('https://cdn.test/a.jpg'),

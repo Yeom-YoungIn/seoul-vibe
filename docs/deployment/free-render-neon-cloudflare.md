@@ -103,6 +103,8 @@ Blueprint 고정값과 자동 생성값:
 
 초기화 전에 테이블을 사용하는 API는 실패할 수 있습니다. 운영 중 스키마 변경에는 별도 SQL 검토가 필요하며 동기화를 상시 켜는 방식으로 대체하지 않습니다.
 
+기존 DB는 서버 배포 **전에** Neon SQL editor에서 `packages/server/sql/` 아래 SQL 중 아직 적용하지 않은 파일을 실행합니다. 특히 `2026-11-09-refresh-token-hash.sql`을 빠뜨리면 새 서버에서 로그인이 실패합니다.
+
 ## 5. Cloudflare Pages 배포 (GitHub Actions)
 
 wb와 같이 Pages Git 연결 대신 GitHub Actions(`.github/workflows/deploy-frontend.yml`)가 main 반영 시 빌드 후 `wrangler pages deploy`로 직접 업로드합니다. Pages 프로젝트가 없으면 첫 실행에서 만듭니다.

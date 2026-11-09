@@ -108,6 +108,8 @@ describe('AuthService', () => {
       await expect(
         service.signup({ email: 'test@example.com', password: 'password123', nickname: 'tester' }),
       ).rejects.toThrow(EmailAlreadyExistsError);
+      // 탈퇴 계정 이메일도 unique 제약에 걸리므로 중복 확인에 포함해야 한다
+      expect(userRepo.findOne).toHaveBeenCalledWith(expect.objectContaining({ withDeleted: true }));
     });
   });
 
@@ -149,7 +151,7 @@ describe('AuthService', () => {
     it('올바른 자격증명과 인증된 이메일로 토큰을 발급한다', async () => {
       const user = buildUser();
       userRepo.findOne.mockResolvedValue(user);
-      const tokenRecord = { id: 'token-uuid', tokenHash: '', expiresAt: new Date(), user } as RefreshToken;
+      const tokenRecord = { id: 'token-uuid', expiresAt: new Date(), user } as RefreshToken;
       refreshTokenRepo.create.mockReturnValue(tokenRecord);
       refreshTokenRepo.save.mockResolvedValue(tokenRecord);
 
@@ -202,7 +204,6 @@ describe('AuthService', () => {
       const user = buildUser();
       const stored = {
         id: 'token-uuid',
-        tokenHash: 'hash',
         expiresAt: new Date(Date.now() + 60_000),
         user,
       } as RefreshToken;
@@ -216,6 +217,15 @@ describe('AuthService', () => {
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('refreshToken');
       expect(refreshTokenRepo.delete).toHaveBeenCalledWith(stored.id);
+    });
+
+    it('동시 요청이 먼저 토큰을 소비했으면 InvalidRefreshTokenError를 던진다', async () => {
+      const stored = { id: 'token-uuid', expiresAt: new Date(Date.now() + 60_000), user: buildUser() } as RefreshToken;
+      refreshTokenRepo.findOne.mockResolvedValue(stored);
+      refreshTokenRepo.delete.mockResolvedValue({ affected: 0, raw: [] });
+
+      await expect(service.refresh('user-uuid', 'token-uuid')).rejects.toThrow(InvalidRefreshTokenError);
+      expect(refreshTokenRepo.save).not.toHaveBeenCalled();
     });
 
     it('존재하지 않는 토큰이면 InvalidRefreshTokenError를 던진다', async () => {

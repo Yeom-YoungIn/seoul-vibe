@@ -5,7 +5,7 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { api } from '../lib/axios';
+import { api, clearAuthStorage } from '../lib/axios';
 
 export interface AuthUser {
   id: string;
@@ -27,7 +27,6 @@ interface AuthSnapshot {
   user: AuthUser | null;
 }
 
-const AUTH_STORAGE_KEYS = ['accessToken', 'refreshToken'] as const;
 const authSnapshot: AuthSnapshot = {
   initialized: false,
   user: null,
@@ -36,10 +35,6 @@ const authSnapshot: AuthSnapshot = {
 let authRequest: Promise<AuthUser | null> | null = null;
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function clearAuthStorage() {
-  AUTH_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
-}
 
 function readAccessToken() {
   return localStorage.getItem('accessToken');

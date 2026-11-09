@@ -6,6 +6,7 @@ import { ContentTranslation } from '../shared/entities/content-translations.enti
 import { ContentNotFoundError } from '../shared/errors/content.errors';
 import { ContentSourceDto, CreateContentDto } from './dto/request/create-content.dto';
 import { normalizeSourceUrl } from './source/source-url';
+import { sanitizeArticleHtml } from '../shared/sanitize-article-html';
 import { ListAdminContentDto } from './dto/request/list-admin-content.dto';
 import { UpdateContentDto } from './dto/request/update-content.dto';
 
@@ -41,7 +42,7 @@ export class AdminContentService {
       this.translationRepository.create({
         locale: t.locale,
         title: t.title,
-        bodyHtml: t.bodyHtml,
+        bodyHtml: t.bodyHtml && sanitizeArticleHtml(t.bodyHtml),
         bodyText: t.bodyText,
       }),
     );
@@ -90,13 +91,13 @@ export class AdminContentService {
         const existing = content.translations.find((tr) => tr.locale === t.locale);
         if (existing) {
           if (t.title !== undefined) existing.title = t.title;
-          if (t.bodyHtml !== undefined) existing.bodyHtml = t.bodyHtml;
+          if (t.bodyHtml !== undefined) existing.bodyHtml = sanitizeArticleHtml(t.bodyHtml);
           if (t.bodyText !== undefined) existing.bodyText = t.bodyText;
         } else {
           const newTranslation = this.translationRepository.create({
             locale: t.locale,
             title: t.title ?? '',
-            bodyHtml: t.bodyHtml,
+            bodyHtml: t.bodyHtml && sanitizeArticleHtml(t.bodyHtml),
             bodyText: t.bodyText,
             content,
           });

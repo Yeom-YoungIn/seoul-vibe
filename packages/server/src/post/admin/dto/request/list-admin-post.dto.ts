@@ -1,13 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { PostCategory } from '../../../shared/entities/post.entity';
 
 export class ListAdminPostDto {
   @ApiPropertyOptional({ description: '숨김 여부 필터' })
   @IsOptional()
   @IsBoolean()
-  @Type(() => Boolean)
+  @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
   isHidden?: boolean;
 
   @ApiPropertyOptional({ enum: PostCategory })
@@ -22,10 +22,11 @@ export class ListAdminPostDto {
   @Min(0)
   skip?: number;
 
-  @ApiPropertyOptional({ type: Number, minimum: 1, default: 20 })
+  @ApiPropertyOptional({ type: Number, minimum: 1, maximum: 100, default: 20 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(100)
   take?: number;
 }

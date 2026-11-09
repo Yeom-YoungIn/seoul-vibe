@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Query,
@@ -47,7 +48,7 @@ export class PostController {
   @Get(':id')
   @TransformResponse(PostResponseDto)
   @ApiOperation({ summary: '게시글 상세 조회' })
-  getOne(@Param('id') id: string) {
+  getOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.postService.getOne(id);
   }
 
@@ -73,7 +74,7 @@ export class PostController {
   @ApiBearerAuth()
   @TransformResponse(PostResponseDto)
   @ApiOperation({ summary: '게시글 수정 (본인만)' })
-  update(@Param('id') id: string, @Body() dto: UpdatePostDto, @Request() req: AuthenticatedPostRequest) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdatePostDto, @Request() req: AuthenticatedPostRequest) {
     return this.postService.update(id, req.user.id, {
       content: dto.content,
       images: dto.images,
@@ -89,7 +90,7 @@ export class PostController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: '게시글 삭제 (본인 or 관리자)' })
-  remove(@Param('id') id: string, @Request() req: AuthenticatedPostRequest) {
+  remove(@Param('id', ParseUUIDPipe) id: string, @Request() req: AuthenticatedPostRequest) {
     return this.postService.remove(id, req.user.id, req.user.role);
   }
 }

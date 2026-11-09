@@ -1,4 +1,5 @@
 import sanitizeHtml = require('sanitize-html');
+import { sanitizeArticleHtml } from '../content/shared/sanitize-article-html';
 import { SeoRoute, UrlLang, URL_LANGS } from './seo-path';
 
 export interface SeoConfig {
@@ -167,11 +168,7 @@ export function renderArticleHead(cfg: SeoConfig, a: ArticleSeoData): string {
 
 export function renderArticleBody(a: ArticleSeoData): string {
   const body = a.bodyHtml
-    ? sanitizeHtml(a.bodyHtml, {
-        allowedTags: [...sanitizeHtml.defaults.allowedTags, 'img'],
-        allowedAttributes: { a: ['href', 'rel', 'target'], img: ['src', 'alt'] },
-        allowedSchemes: ['http', 'https'],
-      })
+    ? sanitizeArticleHtml(a.bodyHtml)
     : (a.bodyText ?? '')
         .split('\n')
         .filter((line) => line.trim())

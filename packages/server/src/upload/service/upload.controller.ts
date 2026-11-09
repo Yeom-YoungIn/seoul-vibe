@@ -21,8 +21,14 @@ import { Request } from 'express';
 import { JwtAuthGuard } from '@app/common';
 import { STORAGE_SERVICE, StorageService } from '../storage/storage.service';
 
-const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-const ALLOWED_MIME_PREFIX = 'image/';
+// 저장 시 Content-Type은 클라이언트 값이 아니라 확장자로 정한다 (image/svg+xml 위장 차단)
+const MIME_BY_EXT: Record<string, string> = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+};
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
 @ApiTags('upload')
@@ -43,7 +49,7 @@ export class UploadController {
       storage: memoryStorage(),
       fileFilter: (_req, file, cb) => {
         const ext = extname(file.originalname).toLowerCase();
-        if (!file.mimetype.startsWith(ALLOWED_MIME_PREFIX) || !ALLOWED_EXT.includes(ext)) {
+        if (!file.mimetype.startsWith('image/') || !MIME_BY_EXT[ext]) {
           return cb(
             new BadRequestException('이미지 파일(jpg, png, gif, webp)만 허용됩니다.'),
             false
@@ -56,8 +62,8 @@ export class UploadController {
   )
   async uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
     if (!file) throw new BadRequestException('파일이 없습니다.');
-    const key = `${randomUUID()}${extname(file.originalname).toLowerCase()}`;
-    const path = await this.storage.put(key, file.buffer, file.mimetype);
+    const ext = extname(file.originalname).toLowerCase();
+    const path = await this.storage.put(`${randomUUID()}${ext}`, file.buffer, MIME_BY_EXT[ext]);
     const base = `${req.protocol}://${req.get('host')}`;
     return { url: /^https?:\/\//.test(path) ? path : `${base}${path}` };
   }
