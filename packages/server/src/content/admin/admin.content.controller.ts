@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Put,
@@ -63,35 +64,35 @@ export class AdminContentController {
   @Get(':id')
   @TransformResponse(AdminContentDetailResponseDto)
   @ApiOperation({ summary: '콘텐츠 상세 조회' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminContentService.findOne(id);
   }
 
   @Put(':id')
   @TransformResponse(AdminContentDetailResponseDto)
   @ApiOperation({ summary: '콘텐츠 수정' })
-  update(@Param('id') id: string, @Body() dto: UpdateContentDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateContentDto) {
     return this.adminContentService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: '콘텐츠 삭제 (소프트)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminContentService.remove(id);
   }
 
   @Patch(':id/publish')
   @TransformResponse(AdminContentDetailResponseDto)
   @ApiOperation({ summary: '콘텐츠 발행' })
-  publish(@Param('id') id: string) {
+  publish(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminContentService.publish(id);
   }
 
   @Patch(':id/unpublish')
   @TransformResponse(AdminContentDetailResponseDto)
   @ApiOperation({ summary: '콘텐츠 발행 취소' })
-  unpublish(@Param('id') id: string) {
+  unpublish(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminContentService.unpublish(id);
   }
 }

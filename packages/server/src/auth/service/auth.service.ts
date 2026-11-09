@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 
 import { EmailService } from '@app/common';
 import { RefreshToken } from '../shared/entities/refresh-token.entity';
@@ -21,6 +21,10 @@ import { AuthServicePort, LoginInput, SignupInput, TokenPair } from './auth.serv
 const BCRYPT_ROUNDS = 10;
 const VERIFY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 
+// 소문자 정규화 이전에 대소문자 섞어 가입한 계정도 찾는다
+const emailEquals = (email: string) =>
+  Raw((alias) => `LOWER(${alias}) = :email`, { email: email.toLowerCase() });
+
 @Injectable()
 export class AuthService implements AuthServicePort {
   constructor(
@@ -34,7 +38,11 @@ export class AuthService implements AuthServicePort {
   ) {}
 
   async signup(input: SignupInput): Promise<void> {
-    const existing = await this.userRepository.findOne({ where: { email: input.email } });
+    // 탈퇴(소프트 삭제) 계정도 unique 제약에 걸리므로 함께 확인한다
+    const existing = await this.userRepository.findOne({
+      where: { email: emailEquals(input.email) },
+      withDeleted: true,
+    });
     if (existing) throw new EmailAlreadyExistsError();
 
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
@@ -74,7 +82,7 @@ export class AuthService implements AuthServicePort {
   }
 
   async login(input: LoginInput): Promise<TokenPair> {
-    const user = await this.userRepository.findOne({ where: { email: input.email } });
+    const user = await this.userRepository.findOne({ where: { email: emailEquals(input.email) } });
     if (!user) throw new InvalidCredentialsError();
 
     const isMatch = await bcrypt.compare(input.password, user.passwordHash);
@@ -95,18 +103,17 @@ export class AuthService implements AuthServicePort {
       relations: ['user'],
     });
 
-    if (!stored || stored.expiresAt < new Date()) {
-      if (stored) await this.refreshTokenRepository.delete(stored.id);
-      throw new InvalidRefreshTokenError();
-    }
+    if (!stored) throw new InvalidRefreshTokenError();
 
-    await this.refreshTokenRepository.delete(stored.id);
+    // 삭제 성공으로 소비를 확정해 같은 토큰의 동시 요청이 둘 다 통과하지 못하게 한다
+    const { affected } = await this.refreshTokenRepository.delete(stored.id);
+    if (affected !== 1 || stored.expiresAt < new Date()) throw new InvalidRefreshTokenError();
+
     return this.issueTokenPair(stored.user);
   }
 
   private async issueTokenPair(user: User): Promise<TokenPair> {
     const tokenRecord = this.refreshTokenRepository.create({
-      tokenHash: randomUUID(), // placeholder — overwritten below
       expiresAt: new Date(
         Date.now() + parseInt(this.configService.get('JWT_REFRESH_EXPIRES_MS', '604800000'))
       ),
@@ -129,9 +136,6 @@ export class AuthService implements AuthServicePort {
         expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN', '7d'),
       }
     );
-
-    tokenRecord.tokenHash = await bcrypt.hash(refreshToken, BCRYPT_ROUNDS);
-    await this.refreshTokenRepository.save(tokenRecord);
 
     return { accessToken, refreshToken };
   }

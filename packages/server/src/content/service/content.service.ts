@@ -9,7 +9,6 @@ import {
 import { DEFAULT_LANGUAGE } from '@app/common';
 import { ContentNotFoundError } from '../shared/errors/content.errors';
 import { Content } from '../shared/entities/content.entity';
-import { IsNull } from 'typeorm';
 
 @Injectable()
 export class ServiceContentService implements ContentServicePort {
@@ -24,7 +23,6 @@ export class ServiceContentService implements ContentServicePort {
     const [contents, count] = await this.contentRepository.findAndCount({
       where: {
         isPublished: true,
-        deletedAt: IsNull(),
         translations: {
           locale: language,
         },
@@ -61,7 +59,6 @@ export class ServiceContentService implements ContentServicePort {
       where: {
         slug,
         isPublished: true,
-        deletedAt: IsNull(),
         translations: {
           locale: language,
         },

@@ -84,6 +84,23 @@ describe('AdminContentService', () => {
       expect(result.slug).toBe('test-slug');
     });
 
+    it('본문 HTML의 스크립트와 이벤트 속성을 제거하고 저장한다', async () => {
+      contentRepo.findOne.mockResolvedValue(null);
+      contentRepo.create.mockReturnValue(buildContent());
+      contentRepo.save.mockImplementation(async (c) => c as Content);
+
+      await service.create({
+        slug: 'test-slug',
+        translations: [
+          { locale: 'KO', title: 't', bodyHtml: '<p onclick="x()">hi</p><script>alert(1)</script>' },
+        ],
+      });
+
+      expect(translationRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ bodyHtml: '<p>hi</p>' }),
+      );
+    });
+
     it('이미 존재하는 slug이면 ConflictException을 던진다', async () => {
       contentRepo.findOne.mockResolvedValue(buildContent());
 

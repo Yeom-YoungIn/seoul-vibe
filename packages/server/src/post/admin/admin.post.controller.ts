@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Query,
   UseGuards,
@@ -36,21 +37,21 @@ export class AdminPostController {
   @Patch(':id/hide')
   @TransformResponse(AdminPostResponseDto)
   @ApiOperation({ summary: '게시글 숨김' })
-  hide(@Param('id') id: string) {
+  hide(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminPostService.hide(id);
   }
 
   @Patch(':id/unhide')
   @TransformResponse(AdminPostResponseDto)
   @ApiOperation({ summary: '게시글 숨김 해제' })
-  unhide(@Param('id') id: string) {
+  unhide(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminPostService.unhide(id);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: '게시글 강제 삭제 (관리자)' })
-  forceRemove(@Param('id') id: string) {
+  forceRemove(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminPostService.forceRemove(id);
   }
 }

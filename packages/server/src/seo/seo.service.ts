@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Content } from '../content/shared/entities/content.entity';
 import { parseSeoPath, toLanguage, toUrlLang, UrlLang, URL_LANGS } from './seo-path';
 import {
@@ -58,7 +58,6 @@ export class SeoService {
       const contents = await this.contentRepository.find({
         where: {
           isPublished: true,
-          deletedAt: IsNull(),
           translations: { locale: toLanguage(route.lang) },
         },
         relations: { translations: true },
@@ -88,7 +87,9 @@ export class SeoService {
 
     if (this.cfg.indexable) {
       const contents = await this.contentRepository.find({
-        where: { isPublished: true, deletedAt: IsNull() },
+        where: { isPublished: true },
+        // 본문(bodyHtml)은 sitemap에 필요 없으므로 읽지 않는다
+        select: { id: true, slug: true, updatedAt: true, translations: { id: true, locale: true } },
         relations: { translations: true },
         order: { createdAt: 'DESC' },
       });
@@ -112,7 +113,7 @@ export class SeoService {
 
   private async findArticle(slug: string, lang: UrlLang): Promise<ArticleSeoData | null> {
     const content = await this.contentRepository.findOne({
-      where: { slug, isPublished: true, deletedAt: IsNull() },
+      where: { slug, isPublished: true },
       relations: { translations: true },
     });
     const translation = content?.translations.find((t) => t.locale === toLanguage(lang));

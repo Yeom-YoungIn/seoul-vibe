@@ -76,6 +76,7 @@ Use `envs/prod/*` for production. Keep real backend config, tfvars, state, and p
 There is no migration framework. `TYPEORM_SYNC=true` is set only in the GCP dev overlay; base, AWS dev and prod run with `false`, so schema changes must be applied by hand **before** rolling out the server image that needs them.
 
 - `packages/server/sql/2026-11-08-content-source.sql` — article source columns (external post curation). Idempotent.
+- `packages/server/sql/2026-11-09-refresh-token-hash.sql` — makes the unused `refresh_tokens.token_hash` nullable; without it, login fails on the new server. Idempotent.
 
 ```bash
 psql "host=$DB_HOST port=$DB_PORT user=$DB_USER dbname=$DB_NAME" -f packages/server/sql/2026-11-08-content-source.sql

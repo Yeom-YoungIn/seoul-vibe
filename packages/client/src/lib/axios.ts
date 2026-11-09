@@ -18,6 +18,37 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export function clearAuthStorage() {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+}
+
+function redirectToLogin(error: unknown) {
+  clearAuthStorage();
+  window.location.href = '/auth/login';
+  return Promise.reject(error);
+}
+
+// 서버가 refresh 토큰을 1회용으로 회전시키므로 동시에 난 401들은 같은 갱신 요청을 기다린다
+let refreshRequest: Promise<string> | null = null;
+
+function refreshAccessToken(refreshToken: string): Promise<string> {
+  refreshRequest ??= axios
+    .post(`${BASE_URL}/auth/refresh`, null, {
+      headers: { Authorization: `Bearer ${refreshToken}` },
+    })
+    .then(({ data }) => {
+      const { accessToken, refreshToken: newRefresh } = data.data;
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', newRefresh);
+      return accessToken as string;
+    })
+    .finally(() => {
+      refreshRequest = null;
+    });
+  return refreshRequest;
+}
+
 // 401 시 Refresh Token으로 갱신
 api.interceptors.response.use(
   (res) => res,
@@ -26,24 +57,13 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true;
       const refreshToken = localStorage.getItem('refreshToken');
-      if (!refreshToken) {
-        localStorage.clear();
-        window.location.href = '/auth/login';
-        return Promise.reject(error);
-      }
+      if (!refreshToken) return redirectToLogin(error);
       try {
-        const { data } = await axios.post(`${BASE_URL}/auth/refresh`, null, {
-          headers: { Authorization: `Bearer ${refreshToken}` },
-        });
-        const { accessToken, refreshToken: newRefresh } = data.data;
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', newRefresh);
+        const accessToken = await refreshAccessToken(refreshToken);
         original.headers.Authorization = `Bearer ${accessToken}`;
         return api(original);
       } catch {
-        localStorage.clear();
-        window.location.href = '/auth/login';
-        return Promise.reject(error);
+        return redirectToLogin(error);
       }
     }
     return Promise.reject(error);

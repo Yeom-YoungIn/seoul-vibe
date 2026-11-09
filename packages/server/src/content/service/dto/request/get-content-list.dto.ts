@@ -1,7 +1,7 @@
 import { DEFAULT_LANGUAGE, LANGUAGE, Language } from '@app/common';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class GetContentListDto {
   @ApiPropertyOptional({ enum: LANGUAGE, default: DEFAULT_LANGUAGE })
@@ -16,10 +16,11 @@ export class GetContentListDto {
   @Min(0)
   skip?: number;
 
-  @ApiPropertyOptional({ type: Number, minimum: 1, default: 10 })
+  @ApiPropertyOptional({ type: Number, minimum: 1, maximum: 100, default: 10 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(100)
   take?: number;
 }

@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Query,
   UseGuards,
@@ -38,14 +39,14 @@ export class AdminUserController {
   @Patch(':id/role')
   @TransformResponse(AdminUserResponseDto)
   @ApiOperation({ summary: '사용자 권한 변경' })
-  changeRole(@Param('id') id: string, @Body() dto: ChangeRoleDto) {
+  changeRole(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ChangeRoleDto) {
     return this.adminUserService.changeRole(id, dto.role);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: '사용자 강제 탈퇴 (소프트 삭제)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminUserService.remove(id);
   }
 }

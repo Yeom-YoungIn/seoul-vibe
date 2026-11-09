@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ContentServicePort } from '../../../src/content/service/content.service.port';
 import { ServiceContentService } from '../../../src/content/service/content.service';
 import { Content } from '../../../src/content/shared/entities/content.entity';
@@ -71,7 +71,6 @@ describe('ServiceContentService', () => {
       expect(contentRepo.findAndCount).toHaveBeenCalledWith({
         where: {
           isPublished: true,
-          deletedAt: IsNull(),
           translations: {
             locale: 'KO',
           },

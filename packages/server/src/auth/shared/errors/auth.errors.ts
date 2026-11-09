@@ -29,9 +29,3 @@ export class InvalidRefreshTokenError extends UnauthorizedException {
     super({ errorCode: 'INVALID_REFRESH_TOKEN', message: 'Invalid or expired refresh token' });
   }
 }
-
-export class UserNotFoundError extends NotFoundException {
-  constructor() {
-    super({ errorCode: 'USER_NOT_FOUND', message: 'User not found' });
-  }
-}
