@@ -224,12 +224,16 @@ export function renderSitemap(cfg: SeoConfig, entries: SitemapEntry[]): string {
 
 export function renderRobots(cfg: SeoConfig): string {
   if (!cfg.indexable) return 'User-agent: *\nDisallow: /\n';
+  // 구글 크롤러만 허용한다. Googlebot-Image 등 하위 크롤러도 Googlebot 그룹을 따른다
   return [
-    'User-agent: *',
+    'User-agent: Googlebot',
     'Allow: /',
     'Disallow: /admin',
     'Disallow: /auth',
     'Disallow: /api',
+    '',
+    'User-agent: *',
+    'Disallow: /',
     '',
     `Sitemap: ${cfg.siteUrl}/sitemap.xml`,
     '',
