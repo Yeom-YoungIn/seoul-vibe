@@ -176,7 +176,8 @@ describe('summarize', () => {
 describe('renderRobots', () => {
   it('indexable이면 비공개 경로만 막고 sitemap을 알린다', () => {
     const robots = renderRobots(cfg);
-    expect(robots).toContain('Allow: /');
+    expect(robots).toContain('User-agent: Googlebot\nAllow: /');
+    expect(robots).toContain('User-agent: *\nDisallow: /\n');
     expect(robots).toContain('Disallow: /admin');
     expect(robots).toContain('Disallow: /auth');
     expect(robots).toContain('Disallow: /api');
