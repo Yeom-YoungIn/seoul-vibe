@@ -8,16 +8,15 @@ Seoul Vibe는 서울의 식당·카페·장소를 두 가지 방식으로 소개
 
 - 프론트엔드·백엔드·인프라를 혼자 설계, 구현, 배포한 풀스택 프로젝트
 - npm workspaces 모노레포 (`packages/client`, `packages/server`)
-- 같은 컨테이너 이미지를 **AWS EKS / GCP GKE(Terraform + Kustomize)** 와 **무료 플랜 서버리스 구성** 두 곳에 배포할 수 있도록 구성
 
 | 구분     | 기술                                                                                   |
 | -------- | -------------------------------------------------------------------------------------- |
 | Frontend | React, TypeScript, Vite, React Router, Axios, Leaflet(react-leaflet)                   |
 | Backend  | NestJS, TypeScript, TypeORM, Passport JWT, bcrypt, Nodemailer, Swagger                 |
-| Database | PostgreSQL (Neon / Cloud SQL)                                                          |
+| Database | PostgreSQL (Neon)                                                                      |
 | Storage  | 로컬 디스크 / S3 호환 오브젝트 스토리지(Supabase Storage, AWS S3, R2)                  |
-| Infra    | Docker, Nginx, Kubernetes(Kustomize), Terraform, AWS EKS, GCP GKE, Render, Cloudflare Pages |
-| CI/CD    | GitHub Actions (PR 검증, Pages 자동 배포, keep-warm), Cloud Build                      |
+| Infra    | Docker, Nginx, Render, Cloudflare Pages                                                |
+| CI/CD    | GitHub Actions (PR 검증, Pages 자동 배포, keep-warm)                                   |
 | Test     | Jest, Supertest                                                                        |
 
 ## 1. 사용자 및 관리자 화면
@@ -66,23 +65,6 @@ flowchart LR
   GH -.->|10분 keep-warm /health| R
 ```
 
-### 클라우드 (Kubernetes)
-
-```mermaid
-flowchart LR
-  U[사용자] --> ING["Ingress<br/>(AWS ALB / GKE Ingress)"]
-  subgraph K8s["EKS / GKE 클러스터 (Terraform)"]
-    ING --> C["client Deployment<br/>Nginx + React"]
-    ING --> SV["server Deployment<br/>NestJS"]
-    SV --> PVC[("uploads PVC<br/>EFS / PD")]
-  end
-  SV --> DB[("PostgreSQL<br/>Cloud SQL 등")]
-  REG["ECR / Artifact Registry"] -.->|이미지| K8s
-```
-
-- `k8s/base` + `k8s/overlays/{dev,prod,aws,gcp}` Kustomize 구조로 환경별 설정 분리
-- Terraform으로 VPC, 클러스터, 레지스트리, IAM, (AWS) ALB Controller·EFS, (GCP) Cloud SQL 프로비저닝
-
 ## 3. 주요 기능
 
 **사용자**
@@ -106,5 +88,4 @@ flowchart LR
 ## 참고 링크
 
 - [클라이언트 앱](./packages/client) · [서버 앱](./packages/server)
-- [AWS EKS Terraform](./terraform/aws/eks/README.md) · [GCP GKE Terraform](./terraform/gcp/gke/README.md)
 - [무료 배포 가이드](docs/deployment/free-render-neon-cloudflare.md)
