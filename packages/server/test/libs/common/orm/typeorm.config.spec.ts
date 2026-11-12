@@ -28,6 +28,10 @@ describe('DB 연결 설정', () => {
       build({ DATABASE_URL: 'postgres://neon/db', DB_SSL: 'false', TYPEORM_SYNC: 'true' })
     ).toMatchObject({ synchronize: true });
   });
+  it('빌드된 마이그레이션 경로를 가리킨다', () => {
+    const config = build({ DATABASE_URL: 'postgres://neon/db' });
+    expect((config as { migrations: string[] }).migrations[0]).toMatch(/src\/migrations\/\*\.js$/);
+  });
   it('URL과 필수 DB 설정이 없으면 에러를 던진다', () => {
     expect(() => build({})).toThrow('Missing DB env vars');
   });

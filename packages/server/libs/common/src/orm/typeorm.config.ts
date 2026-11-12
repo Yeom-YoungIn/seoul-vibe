@@ -4,6 +4,7 @@
  */
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { join } from 'path';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 export const buildTypeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => {
@@ -31,6 +32,8 @@ export const buildTypeOrmConfig = (configService: ConfigService): TypeOrmModuleO
       : {}),
     autoLoadEntities: true,
     synchronize: String(configService.get('TYPEORM_SYNC', false)) === 'true',
+    // 빌드 결과(dist/libs/...)에서 dist/src/migrations를 가리킨다. 실행은 OrmModule이 동기화 뒤에 한다
+    migrations: [join(__dirname, '../../../../src/migrations/*.js')],
     namingStrategy:
       configService.get<string>('DB_NAMING_STRATEGY') === 'snake'
         ? new SnakeNamingStrategy()
