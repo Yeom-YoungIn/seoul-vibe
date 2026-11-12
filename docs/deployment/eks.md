@@ -73,7 +73,9 @@ Use `envs/prod/*` for production. Keep real backend config, tfvars, state, and p
 
 ## Schema Changes
 
-There is no migration framework. `TYPEORM_SYNC=true` is set only in the GCP dev overlay; base, AWS dev and prod run with `false`, so schema changes must be applied by hand **before** rolling out the server image that needs them.
+Schema is not managed by migrations. `TYPEORM_SYNC=true` is set only in the GCP dev overlay; base, AWS dev and prod run with `false`, so schema changes must be applied by hand **before** rolling out the server image that needs them.
+
+Data migrations in `packages/server/src/migrations` (currently the Seoul place article seed) run automatically on server start, after schema sync, and are recorded in the `migrations` table.
 
 - `packages/server/sql/2026-11-08-content-source.sql` — article source columns (external post curation). Idempotent.
 - `packages/server/sql/2026-11-09-refresh-token-hash.sql` — makes the unused `refresh_tokens.token_hash` nullable; without it, login fails on the new server. Idempotent.

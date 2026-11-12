@@ -28,7 +28,9 @@ postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require
 
 `DATABASE_URL`이 설정되면 기존 `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_NAME`보다 우선합니다. URL이 없을 때만 기존 다섯 값이 모두 필요합니다. `DB_SSL=true`는 `ssl: { rejectUnauthorized: false }`를 설정합니다. 기존 로컬 개발은 `DATABASE_URL`과 `DB_SSL`을 설정하지 않으면 됩니다.
 
-**이 프로젝트에는 마이그레이션이 없습니다.** 빈 DB의 초기 스키마 생성은 4절의 `TYPEORM_SYNC` 절차를 사용합니다. 기존 데이터가 있는 DB에 동기화를 상시 활성화하지 않습니다.
+**스키마는 마이그레이션으로 관리하지 않습니다.** 빈 DB의 초기 스키마 생성은 4절의 `TYPEORM_SYNC` 절차를 사용합니다. 기존 데이터가 있는 DB에 동기화를 상시 활성화하지 않습니다.
+
+`packages/server/src/migrations`의 TypeORM 마이그레이션(현재는 서울 장소 아티클 시드)은 서버가 시작할 때 스키마 동기화 뒤에 자동 실행되고, 실행 이력은 `migrations` 테이블에 남습니다. 테이블이 없는 빈 DB를 `TYPEORM_SYNC=false`로 띄우면 이 단계에서 서버 시작이 실패하니, 4절 절차대로 처음 한 번은 `true`로 배포합니다.
 
 ## 3. Supabase public 버킷과 S3 키
 
