@@ -1,8 +1,0 @@
-# 목적 - prod 환경에서 업로드 PVC에 EFS StorageClass를 연결하기 위해 추가됨
-# 설명 - 현재 prod overlay는 AWS EKS 배포 경로이므로 efs-sc 값을 prod overlay에서 주입한다.
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: seoul-vibe-server-uploads
-spec:
-  storageClassName: efs-sc

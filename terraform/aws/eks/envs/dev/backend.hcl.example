@@ -1,7 +1,0 @@
-# 목적 - dev 환경 Terraform state backend 설정 예시를 제공하기 위해 추가됨
-# 설명 - 실제 S3 bucket과 DynamoDB lock table을 준비한 뒤 terraform init -backend-config에 전달한다.
-bucket         = "CHANGE_ME-seoul-vibe-terraform-state"
-key            = "dev/terraform.tfstate"
-region         = "ap-northeast-2"
-dynamodb_table = "CHANGE_ME-seoul-vibe-terraform-locks"
-encrypt        = true
