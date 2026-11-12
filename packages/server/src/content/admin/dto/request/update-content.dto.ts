@@ -5,12 +5,13 @@ import {
   IsIn,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
   ValidateNested,
 } from 'class-validator';
 import { LANGUAGE, Language } from '@app/common';
-import { ContentSourceDto } from './create-content.dto';
+import { COVER_IMAGE_URL, ContentSourceDto } from './create-content.dto';
 
 export class UpdateContentTranslationDto {
   @ApiPropertyOptional({ enum: LANGUAGE })
@@ -49,4 +50,15 @@ export class UpdateContentDto extends ContentSourceDto {
   @ValidateNested({ each: true })
   @Type(() => UpdateContentTranslationDto)
   translations?: UpdateContentTranslationDto[];
+
+  @ApiPropertyOptional({
+    description: '대표 이미지 URL (http(s) 또는 /uploads 경로, null이면 제거)',
+    maxLength: 2048,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  @Matches(COVER_IMAGE_URL, { message: 'coverImageUrl must be an http(s) URL or a /path' })
+  coverImageUrl?: string | null;
 }

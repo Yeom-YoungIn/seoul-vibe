@@ -69,11 +69,13 @@ export type ArticleSourcePayload = Partial<Omit<ArticleSource, 'sourceType'>>;
 
 export interface CreateArticlePayload extends ArticleSourcePayload {
   slug: string;
+  coverImageUrl?: string | null;
   translations: { locale: string; title: string; bodyHtml?: string; bodyText?: string }[];
 }
 
 export interface UpdateArticlePayload extends ArticleSourcePayload {
   slug?: string;
+  coverImageUrl?: string | null;
   translations?: { locale: string; title?: string; bodyHtml?: string; bodyText?: string }[];
 }
 

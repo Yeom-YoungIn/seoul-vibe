@@ -36,7 +36,10 @@ export class AdminContentService {
       });
     }
 
-    const content = this.contentRepository.create({ slug: dto.slug });
+    const content = this.contentRepository.create({
+      slug: dto.slug,
+      coverImageUrl: dto.coverImageUrl?.trim() || null,
+    });
     this.applySource(content, dto);
     content.translations = dto.translations.map((t) =>
       this.translationRepository.create({
@@ -84,6 +87,7 @@ export class AdminContentService {
     }
 
     this.applySource(content, dto);
+    if (dto.coverImageUrl !== undefined) content.coverImageUrl = dto.coverImageUrl?.trim() || null;
 
     if (dto.translations?.length) {
       for (const t of dto.translations) {

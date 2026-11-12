@@ -7,6 +7,7 @@ import { useLanguage, useLocalePath } from '../../hooks/useLanguage';
 import { localePath } from '../../lib/locale';
 import ArticleSource from '../../components/ui/ArticleSource';
 import { useHeaderTone } from '../../hooks/useHeaderTone';
+import { assetUrl } from '../../lib/axios';
 
 const MISSING_COPY = {
   EN: { text: 'Not available in English yet.', other: 'Read it in Korean →' },
@@ -79,7 +80,10 @@ export default function ArticleDetailPage() {
 
   return (
     <article>
-      <header className="article-hero">
+      <header className={`article-hero${article.coverImageUrl ? ' has-image' : ''}`}>
+        {article.coverImageUrl && (
+          <img src={assetUrl(article.coverImageUrl)} alt="" className="article-hero-img" />
+        )}
         <Link to={lp('/articles')} className="label article-hero-back">
           Seoul Vibes
         </Link>

@@ -453,6 +453,9 @@ a.feature:hover .feature-title { text-decoration: underline; text-decoration-thi
 .article-row svg { transition: transform 240ms var(--ease-out); }
 .article-row:hover { background: var(--lime); padding-inline: 20px; }
 .article-row:hover svg { transform: translateX(4px); }
+.article-row.has-image { grid-template-columns: 168px 1fr auto; }
+.article-row.has-image time { grid-column: 2 / -1; align-self: end; }
+.article-row-img { grid-row: span 2; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
 
 /* ── Side panel (list pages) ──────────────────── */
 .panel {
@@ -509,6 +512,15 @@ a.feature:hover .feature-title { text-decoration: underline; text-decoration-thi
   letter-spacing: -0.03em;
 }
 .article-hero time { font-weight: 600; }
+.article-hero.has-image { position: relative; overflow: hidden; isolation: isolate; }
+.article-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+.article-hero.has-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.72) 0%, rgb(0 0 0 / 0.3) 60%, rgb(0 0 0 / 0.25) 100%);
+}
 
 .article-body-wrap { padding: 80px var(--gutter) 120px; }
 
@@ -525,6 +537,11 @@ a.feature:hover .feature-title { text-decoration: underline; text-decoration-thi
 .article-body h2 { font-size: 1.75rem; }
 .article-body h3 { font-size: 1.375rem; }
 .article-body img { width: 100%; margin-block: 2em; }
+.article-body figure img { margin-block: 2em 0.6em; }
+.article-body figcaption,
+.article-body small { display: block; font-size: 0.8125rem; line-height: 1.6; color: var(--ink-mute); }
+.article-body small a,
+.article-body figcaption a { text-decoration-thickness: 2px; }
 .article-body a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--lime); text-decoration-thickness: 4px; text-underline-offset: 3px; }
 .article-body blockquote { font-size: 1.5rem; font-weight: 800; line-height: 1.45; color: var(--ink); }
 .article-body ul,
@@ -963,6 +980,7 @@ a.feature:hover .feature-title { text-decoration: underline; text-decoration-thi
 
 .modal-title { font-size: 1.625rem; font-weight: 800; letter-spacing: -0.03em; }
 .modal-form { display: grid; gap: 1.25rem; }
+.cover-preview { width: 100%; max-height: 220px; object-fit: cover; }
 .modal-translations { display: grid; gap: 1rem; }
 .translation-block { display: grid; gap: 0.75rem; padding: 1rem; border: 2px solid var(--ink); background: var(--white); }
 .translation-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
@@ -990,6 +1008,8 @@ a.feature:hover .feature-title { text-decoration: underline; text-decoration-thi
 }
 
 @media (max-width: 560px) {
+  .article-row.has-image { grid-template-columns: 96px 1fr; }
+  .article-row.has-image svg { display: none; }
   .stagger { grid-template-columns: 1fr; row-gap: 48px; padding-bottom: 0; }
   .stagger > :nth-child(even) { transform: none; }
   .feature-body { padding-bottom: 40px; }

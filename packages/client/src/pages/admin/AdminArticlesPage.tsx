@@ -7,6 +7,7 @@ import {
 } from '../../lib/api/admin';
 import { ArticleSource } from '../../lib/api/articles';
 import { getApiErrorMessage } from '../../lib/api/error';
+import { uploadApi } from '../../lib/api/upload';
 import { assetUrl } from '../../lib/axios';
 
 const PAGE_SIZE = 20;
@@ -18,6 +19,7 @@ type SourceForm = { [K in keyof ArticleSource]: string };
 
 interface ArticleFormState {
   slug: string;
+  coverImageUrl: string;
   translations: { locale: string; title: string; bodyHtml: string }[];
   source: SourceForm;
 }
@@ -53,6 +55,7 @@ const BODY_PLACEHOLDER =
 
 const emptyForm = (): ArticleFormState => ({
   slug: '',
+  coverImageUrl: '',
   translations: [{ locale: 'EN', title: '', bodyHtml: '' }],
   source: emptySource(),
 });
@@ -70,6 +73,7 @@ export default function AdminArticlesPage() {
   const [formError, setFormError] = useState('');
   const [previewing, setPreviewing] = useState(false);
   const [previewError, setPreviewError] = useState('');
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -97,6 +101,7 @@ export default function AdminArticlesPage() {
     const detail = await adminArticlesApi.getOne(article.id);
     setForm({
       slug: detail.slug,
+      coverImageUrl: detail.coverImageUrl ?? '',
       translations: (detail.translations ?? []).map((t) => ({
         locale: t.locale,
         title: t.title,
@@ -118,6 +123,7 @@ export default function AdminArticlesPage() {
         const payload: CreateArticlePayload = {
           ...toSourcePayload(form.source),
           slug: form.slug,
+          coverImageUrl: form.coverImageUrl.trim() || null,
           translations: form.translations.map((t) => ({
             locale: t.locale,
             title: t.title,
@@ -129,6 +135,7 @@ export default function AdminArticlesPage() {
         const payload: UpdateArticlePayload = {
           ...toSourcePayload(form.source),
           slug: form.slug,
+          coverImageUrl: form.coverImageUrl.trim() || null,
           translations: form.translations.map((t) => ({
             locale: t.locale,
             title: t.title,
@@ -192,6 +199,20 @@ export default function AdminArticlesPage() {
       setPreviewError(getApiErrorMessage(err, 'Failed to load the source.'));
     } finally {
       setPreviewing(false);
+    }
+  };
+
+  const handleCoverUpload = async (file: File | undefined) => {
+    if (!file) return;
+    setUploadingCover(true);
+    setFormError('');
+    try {
+      const url = await uploadApi.uploadImage(file);
+      setForm((f) => ({ ...f, coverImageUrl: url }));
+    } catch (err) {
+      setFormError(getApiErrorMessage(err, 'Failed to upload the image.'));
+    } finally {
+      setUploadingCover(false);
     }
   };
 
@@ -320,6 +341,26 @@ export default function AdminArticlesPage() {
                   required
                 />
               </label>
+
+              <label className="form-label">
+                Cover image (optional)
+                <input
+                  className="form-input"
+                  value={form.coverImageUrl}
+                  onChange={(e) => setForm((f) => ({ ...f, coverImageUrl: e.target.value }))}
+                  placeholder="https://… or upload a file"
+                />
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                aria-label="Upload cover image"
+                disabled={uploadingCover}
+                onChange={(e) => handleCoverUpload(e.target.files?.[0])}
+              />
+              {form.coverImageUrl.trim() && (
+                <img src={assetUrl(form.coverImageUrl.trim())} alt="" className="cover-preview" />
+              )}
 
               <fieldset className="source-fieldset">
                 <legend className="form-label">Original source (optional)</legend>
