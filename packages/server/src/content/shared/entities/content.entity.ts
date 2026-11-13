@@ -47,6 +47,9 @@ export class Content {
   @Column({ type: 'varchar', length: 500, nullable: true })
   sourceImagePath?: string | null;
 
+  @Column({ type: 'varchar', length: 2048, nullable: true })
+  coverImageUrl?: string | null;
+
   @OneToMany(() => ContentTranslation, (translation) => translation.content, { cascade: true })
   translations!: ContentTranslation[];
 

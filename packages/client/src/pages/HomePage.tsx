@@ -10,6 +10,7 @@ import PostCard from '../components/ui/PostCard';
 import FeatureCover from '../components/ui/FeatureCover';
 import Byline from '../components/ui/Byline';
 import { ArrowIcon } from '../components/ui/Icon';
+import { assetUrl } from '../lib/axios';
 
 export default function HomePage() {
   const lp = useLocalePath();
@@ -113,6 +114,7 @@ export default function HomePage() {
           <div className="split-side">
             <FeatureCover
               to={lp(`/articles/${leadArticle.slug}`)}
+              image={leadArticle.coverImageUrl ? assetUrl(leadArticle.coverImageUrl) : undefined}
               label="Guide"
               title={leadArticle.title}
               date={formatDate(leadArticle.createdAt)}

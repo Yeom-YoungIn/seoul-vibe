@@ -58,4 +58,8 @@ export class BaseContentResponseDto {
   @ApiPropertyOptional({ description: '원문 썸네일 경로', type: String, nullable: true })
   @Expose()
   sourceImagePath?: string | null;
+
+  @ApiPropertyOptional({ description: '대표 이미지 URL', type: String, nullable: true })
+  @Expose()
+  coverImageUrl?: string | null;
 }

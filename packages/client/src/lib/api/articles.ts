@@ -26,6 +26,7 @@ export interface Article extends ArticleSource {
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  coverImageUrl: string | null;
   translations: ArticleTranslation[];
 }
 
@@ -35,6 +36,7 @@ export interface ArticleListItem {
   isPublished: boolean;
   publishedAt: string | null;
   createdAt: string;
+  coverImageUrl: string | null;
   title: string;
 }
 

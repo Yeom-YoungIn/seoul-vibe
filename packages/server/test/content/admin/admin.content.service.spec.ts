@@ -9,6 +9,7 @@ import {
   InvalidSourceUrlError,
 } from '../../../src/content/shared/errors/content.errors';
 import { AdminContentService } from '../../../src/content/admin/admin.content.service';
+import { COVER_IMAGE_URL } from '../../../src/content/admin/dto/request/create-content.dto';
 
 const mockContentRepository = () => ({
   findOne: jest.fn(),
@@ -329,6 +330,54 @@ describe('AdminContentService', () => {
           sourceUrl: 'javascript:alert(1)',
         }),
       ).rejects.toBeInstanceOf(InvalidSourceUrlError);
+    });
+  });
+
+  describe('coverImageUrl', () => {
+    it('create 시 대표 이미지를 저장하고 빈 값은 null로 둔다', async () => {
+      contentRepo.findOne.mockResolvedValue(null);
+      contentRepo.create.mockImplementation((v) => v as Content);
+      contentRepo.save.mockImplementation(async (v) => v as Content);
+
+      await service.create({ slug: 'a', translations: [], coverImageUrl: ' https://x/a.jpg ' });
+      await service.create({ slug: 'b', translations: [], coverImageUrl: '' });
+
+      expect(contentRepo.create).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ coverImageUrl: 'https://x/a.jpg' })
+      );
+      expect(contentRepo.create).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ coverImageUrl: null })
+      );
+    });
+
+    it('update 시 값이 없으면 유지하고 null이면 제거한다', async () => {
+      const content = buildContent({ coverImageUrl: '/uploads/a.jpg' });
+      contentRepo.findOne.mockResolvedValue(content);
+      contentRepo.save.mockImplementation(async (v) => v as Content);
+
+      await service.update('content-uuid', {});
+      expect(content.coverImageUrl).toBe('/uploads/a.jpg');
+      await service.update('content-uuid', { coverImageUrl: null });
+      expect(content.coverImageUrl).toBeNull();
+    });
+
+    it('http(s) URL과 업로드 경로만 허용한다', () => {
+      for (const ok of [
+        '',
+        'https://upload.wikimedia.org/a.jpg',
+        'http://x/a.png',
+        '/uploads/a.jpg',
+      ])
+        expect(COVER_IMAGE_URL.test(ok)).toBe(true);
+      for (const bad of [
+        'javascript:alert(1)',
+        'data:image/png;base64,xx',
+        '//evil.com/a.jpg',
+        'a.jpg',
+      ])
+        expect(COVER_IMAGE_URL.test(bad)).toBe(false);
     });
   });
 });

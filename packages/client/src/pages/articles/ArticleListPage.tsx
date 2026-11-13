@@ -6,6 +6,7 @@ import Spinner from '../../components/ui/Spinner';
 import { ArrowIcon } from '../../components/ui/Icon';
 import { useLanguage, useLocalePath } from '../../hooks/useLanguage';
 import { useHeaderTone } from '../../hooks/useHeaderTone';
+import { assetUrl } from '../../lib/axios';
 
 const PAGE_SIZE = 12;
 
@@ -73,7 +74,18 @@ export default function ArticleListPage() {
           <ol className="article-rows">
             {articles.map((a) => (
               <li key={a.id}>
-                <Link to={lp(`/articles/${a.slug}`)} className="article-row">
+                <Link
+                  to={lp(`/articles/${a.slug}`)}
+                  className={`article-row${a.coverImageUrl ? ' has-image' : ''}`}
+                >
+                  {a.coverImageUrl && (
+                    <img
+                      src={assetUrl(a.coverImageUrl)}
+                      alt=""
+                      className="article-row-img"
+                      loading="lazy"
+                    />
+                  )}
                   <time>{formatDate(a.createdAt)}</time>
                   <h2>{a.title}</h2>
                   <ArrowIcon size={28} />
